@@ -1,0 +1,73 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/GeneralSans-Bold.ttf",
+      "sha1": "2dc5b9908d7f2465aff2bed5243cdff8907ad27d"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-BoldItalic.ttf",
+      "sha1": "150b0c767364af7b002c2edd5bda703002f7f839"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Extralight.ttf",
+      "sha1": "c17de3bf6694f4bbc9450c5ecd12980f4764a980"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-ExtralightItalic.ttf",
+      "sha1": "4a213a8a5edd3efdb4b43925b320cb3da5c9b07e"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Italic.ttf",
+      "sha1": "275dde65fc193e99479c310fc19103429ca5c0b9"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Light.ttf",
+      "sha1": "0d33b5acad2760055dc409f700d3d38b24a81505"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-LightItalic.ttf",
+      "sha1": "96290a15e639d2f2ebd78d7b43b64003c7113a89"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Medium.ttf",
+      "sha1": "76717a55871484c722d660428ea7100d1a8646da"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-MediumItalic.ttf",
+      "sha1": "d5b7f527d0b35eb3e5b5d7c30a41d548cfcdb5a0"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Regular.ttf",
+      "sha1": "8c7219592ebe79f7b0fd9b9a7bbda5ac208bf7b7"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Semibold.ttf",
+      "sha1": "3775300e113dff8ce95a71f38df6f5dd37c3de48"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-SemiboldItalic.ttf",
+      "sha1": "b87287db869aae0076b8d705bfe16a103dfa0457"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-Variable.ttf",
+      "sha1": "e62ab33e17846da87b46ac2a3b155a7307f35fb8"
+    },
+    {
+      "path": "assets/fonts/GeneralSans-VariableItalic.ttf",
+      "sha1": "f3d62b45179570481bf8c87eae0c917f16f2cb78"
+    },
+    {
+      "path": "assets/Images/chose1.png",
+      "sha1": "a8ee069736beb98c5c3468fc82ed532ee7aa21a8"
+    },
+    {
+      "path": "assets/Images/chose2.png",
+      "sha1": "19b563b4cadd9374b786ab5175a4910bad28b376"
+    },
+    {
+      "path": "assets/Images/girl.png",
+      "sha1": "cb5a8b4162949a5cd1843bfed640187840f49c92"
+    }
+  ]
+}

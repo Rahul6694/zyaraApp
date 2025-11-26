@@ -1,45 +1,24 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, {useEffect} from 'react';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import SplashScreen from 'react-native-splash-screen';
+import AppNavigator from './src/Navigation/AppNavigator';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const App = () => {
+  useEffect(() => {
+    // Hide splash screen when app is ready
+    // Using setTimeout to ensure navigation is fully initialized
+    const timer = setTimeout(() => {
+      SplashScreen.hide();
+    }, 500);
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <AppNavigator />
+    </GestureHandlerRootView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+};
 
 export default App;
