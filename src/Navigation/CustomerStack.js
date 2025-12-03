@@ -7,8 +7,7 @@ import SignUp from '../Screens/CustomerScreen/SignUp';
 import OTPVerify from '../Screens/CustomerScreen/OTPVerify';
 import CMSScreen from '../Screens/CMSScreen';
 import  CustomBottomTabs from './CustomBottomTabs';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../Constants/Colors';
+import SettingProfile from '../Screens/CustomerScreen/SettingProfile';
 
 const Stack = createStackNavigator();
 
@@ -64,6 +63,12 @@ const CustomerStack = () => {
         component={CustomBottomTabs}
         initialParams={{userType: 'customer'}}
       />
+        <Stack.Screen 
+        name="SettingProfile" 
+        component={SettingProfile}
+    
+      />
+      
     </Stack.Navigator>
   
   );

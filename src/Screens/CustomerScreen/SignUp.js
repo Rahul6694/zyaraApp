@@ -23,6 +23,7 @@ import {validateMobileNumber} from '../../Utils/Validation';
 import {customerSignup} from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ImageModal from '../../Component/Modals/ImageModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -364,7 +365,7 @@ const SignUp = () => {
             />
           </View>
         </ScrollView>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.signinLink}
           onPress={() => navigation.goBack()}>
           <Typography
@@ -380,7 +381,7 @@ const SignUp = () => {
               Sign In
             </Typography>
           </Typography>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </KeyboardAvoidingView>
 
       {/* Image Modal for Profile Picture */}

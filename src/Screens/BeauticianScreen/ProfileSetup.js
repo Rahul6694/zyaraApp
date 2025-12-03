@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -13,21 +13,21 @@ import {
   Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {Colors} from '../../Constants/Colors';
-import {Font} from '../../Constants/Font';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
 import Input from '../../Component/Input';
 import Button from '../../Component/Button';
-import {ImageConstant} from '../../Constants/ImageConstant';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {beauticianSignupStep2} from '../../Backend/BeauticianAPI';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { beauticianSignupStep2 } from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
-import {validateName, validateEmail, validateMobileNumber} from '../../Utils/Validation';
+import { validateName, validateEmail, validateMobileNumber } from '../../Utils/Validation';
 import ScreenHeader from '../../Component/ScreenHeader';
-import {getCMSData} from '../../Backend/CMSAPI';
+import { getCMSData } from '../../Backend/CMSAPI';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const ProfileSetup = () => {
   const navigation = useNavigation();
@@ -47,49 +47,49 @@ const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({...prev, [field]: value}));
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({...prev, [field]: ''}));
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
   const handleContinue = () => {
     const newErrors = {};
-    
+
     // Validate Full Name
     const nameValidation = validateName(formData.fullName);
     if (!nameValidation.isValid) {
       if (nameValidation.errors.includes('name_required')) {
-      newErrors.fullName = 'Full name is required';
+        newErrors.fullName = 'Full name is required';
       } else if (nameValidation.errors.includes('name_too_short')) {
         newErrors.fullName = 'Name must be at least 2 characters';
       } else if (nameValidation.errors.includes('name_too_long')) {
         newErrors.fullName = 'Name must be less than 50 characters';
       }
     }
-    
+
     // Validate Salon/Brand Name
     const salonValidation = validateName(formData.salonName);
     if (!salonValidation.isValid) {
       if (salonValidation.errors.includes('name_required')) {
-      newErrors.salonName = 'Salon/Brand name is required';
+        newErrors.salonName = 'Salon/Brand name is required';
       } else if (salonValidation.errors.includes('name_too_short')) {
         newErrors.salonName = 'Salon name must be at least 2 characters';
       } else if (salonValidation.errors.includes('name_too_long')) {
         newErrors.salonName = 'Salon name must be less than 50 characters';
       }
     }
-    
+
     // Validate Email
     const emailValidation = validateEmail(formData.email);
     if (!emailValidation.isValid) {
       if (emailValidation.errors.includes('email_required')) {
-      newErrors.email = 'Email is required';
+        newErrors.email = 'Email is required';
       } else if (emailValidation.errors.includes('email_invalid')) {
         newErrors.email = 'Please enter a valid email address';
       }
     }
-    
+
     // Validate Phone Number
     const phoneNumber = formData.phoneNumber.replace(/^\+91\s*/, '').trim();
     const phoneValidation = validateMobileNumber(phoneNumber);
@@ -102,16 +102,16 @@ const ProfileSetup = () => {
         newErrors.phoneNumber = 'Please enter a valid phone number';
       } else if (phoneValidation.errors.includes('mobile_invalid_format')) {
         newErrors.phoneNumber = 'Phone number must contain only digits';
+      }
     }
-    }
-    
+
     // Validate Location
     if (!formData.location.trim()) {
       newErrors.location = 'Location is required';
     } else if (formData.location.trim().length < 3) {
       newErrors.location = 'Location must be at least 3 characters';
     }
-    
+
     // Validate Experience
     if (!formData.experience.trim()) {
       newErrors.experience = 'Experience is required';
@@ -123,7 +123,7 @@ const ProfileSetup = () => {
         newErrors.experience = 'Experience cannot exceed 50 years';
       }
     }
-    
+
     // Validate Terms Agreement
     if (!agreeToTerms) {
       newErrors.agreeToTerms = 'Please agree to Terms and Conditions';
@@ -145,7 +145,7 @@ const ProfileSetup = () => {
     const phoneNumberClean = formData.phoneNumber.replace(/^\+91\s*/, '').trim();
     const phoneValidationFinal = validateMobileNumber(phoneNumberClean);
     const cleanPhoneNumber = phoneValidationFinal.cleanMobile;
-    
+
     // Extract city and state from location (assuming format: "City, State" or just "City")
     const locationParts = formData.location.split(',').map(s => s.trim());
     const city = locationParts[0] || '';
@@ -170,7 +170,7 @@ const ProfileSetup = () => {
         setLoading(false);
         console.log('Step 2 completed successfully:', response);
         SimpleToast.show('Profile details saved successfully', SimpleToast.SHORT);
-        
+
         // Navigate to Step 3 (KYCVerificationStep2)
         navigation.navigate('KYCVerificationStep2', {
           token: token,
@@ -187,203 +187,205 @@ const ProfileSetup = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
-    <View style={styles.container}>
- 
-      <LinearGradient
-        colors={[Colors.lightGreen, Colors.white]}
-        start={{x: 0, y: 0}}
-        end={{x: 0, y: 1}}
-        style={styles.backgroundGradient}
-      />
-      {/* Fixed Header */}
-      <ScreenHeader title="Profile Setup" showGreenLine={true} />
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : null}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
-          {/* Content */}
-          <View style={styles.content}>
-            <Typography
-              size={26}
-              type={Font.GeneralSans_Semibold}
-              color={Colors.black}
-              style={styles.title}>
-              Set Up Your Profile
-            </Typography>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.lightGreen }}>
+      <View style={styles.container}>
 
-            <Typography
-              size={18}
-              type={Font.GeneralSans_Regular}
-              color="#505050"
-              style={styles.subtitle}>
-              Let your customers know you better
-            </Typography>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Full Name"
-                placeholder="enter full name"
-                value={formData.fullName}
-                onChange={value => handleInputChange('fullName', value)}
-                showTitle={true}
-                placeholderTextColor="#8C8C8C"
-                error={errors.fullName}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Salon/Brand Name"
-                placeholder="enter name"
-                value={formData.salonName}
-                onChange={value => handleInputChange('salonName', value)}
-                showTitle={true}
-                placeholderTextColor="#8C8C8C"
-                error={errors.salonName}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
+        <LinearGradient
+          colors={[Colors.lightGreen, Colors.white]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.backgroundGradient}
+        />
+        {/* Fixed Header */}
+        <ScreenHeader title="Profile Setup" showGreenLine={true} />
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : null}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled">
+            {/* Content */}
+            <View style={styles.content}>
               <Typography
-                size={16}
-                type={Font.GeneralSans_Medium}
-                color="#0A0A0A"
-                style={styles.inputTitle}>
-                Phone Number
+                size={26}
+                type={Font.GeneralSans_Semibold}
+                color={Colors.black}
+                style={styles.title}>
+                Set Up Your Profile
               </Typography>
-              <View style={styles.phoneNumberContainer}>
-                <View style={styles.countryCodeBox}>
-                  <Typography
-                    size={16}
-                    type={Font.GeneralSans_Medium}
-                    color="#2F2E2E">
-                    +91
-                  </Typography>
-                </View>
-                <TextInput
-                  style={styles.phoneInput}
-                  placeholder="enter mobile number"
+
+              <Typography
+                size={18}
+                type={Font.GeneralSans_Regular}
+                color="#505050"
+                style={styles.subtitle}>
+                Let your customers know you better
+              </Typography>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Full Name"
+                  placeholder="enter full name"
+                  value={formData.fullName}
+                  onChange={value => handleInputChange('fullName', value)}
+                  showTitle={true}
                   placeholderTextColor="#8C8C8C"
-                  value={formData.phoneNumber.replace('+91', '').trim()}
-                  onChangeText={value => handleInputChange('phoneNumber', '+91 ' + value)}
-                keyboardType="phone-pad"
+                  error={errors.fullName}
                 />
               </View>
-              {errors.phoneNumber && (
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Salon/Brand Name"
+                  placeholder="enter name"
+                  value={formData.salonName}
+                  onChange={value => handleInputChange('salonName', value)}
+                  showTitle={true}
+                  placeholderTextColor="#8C8C8C"
+                  error={errors.salonName}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Typography
+                  size={16}
+                  type={Font.GeneralSans_Medium}
+                  color="#0A0A0A"
+                  style={styles.inputTitle}>
+                  Phone Number
+                </Typography>
+                <View style={styles.phoneNumberContainer}>
+                  <View style={styles.countryCodeBox}>
+                    <Typography
+                      size={16}
+                      type={Font.GeneralSans_Medium}
+                      color="#2F2E2E">
+                      +91
+                    </Typography>
+                  </View>
+                  <TextInput
+                    style={styles.phoneInput}
+                    placeholder="enter mobile number"
+                    placeholderTextColor="#8C8C8C"
+                    value={formData.phoneNumber.replace('+91', '').trim()}
+                    onChangeText={value => handleInputChange('phoneNumber', '+91 ' + value)}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+                {errors.phoneNumber && (
+                  <Typography
+                    size={12}
+                    type={Font.GeneralSans_Regular}
+                    color={Colors.red}
+                    style={styles.errorText}>
+                    {errors.phoneNumber}
+                  </Typography>
+                )}
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Email Address"
+                  placeholder="example@gmail.com"
+                  value={formData.email}
+                  onChange={value => handleInputChange('email', value)}
+                  keyboardType="email-address"
+                  showTitle={true}
+                  placeholderTextColor="#8C8C8C"
+                  error={errors.email}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Location"
+                  placeholder="Select Location"
+                  value={formData.location}
+                  onChange={value => handleInputChange('location', value)}
+                  showTitle={true}
+                  placeholderTextColor="#8C8C8C"
+                  error={errors.location}
+                  onPress={() => {
+                    // Handle location picker
+                  }}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Experience (Years)"
+                  placeholder="select year"
+                  value={formData.experience}
+                  onChange={value => handleInputChange('experience', value)}
+                  keyboardType="numeric"
+                  showTitle={true}
+                  placeholderTextColor="#8C8C8C"
+                  error={errors.experience}
+                  onPress={() => {
+                    // Handle experience picker
+                  }}
+                />
+              </View>
+
+              <View style={styles.termsContainer}>
+                <TouchableOpacity
+                  style={styles.toggleContainer}
+                  onPress={() => setAgreeToTerms(!agreeToTerms)}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.toggle,
+                      agreeToTerms && styles.toggleActive,
+                    ]}>
+                    {agreeToTerms ? <View style={styles.toggleCircle} /> : <View style={{
+                      width: 22.73,
+                      height: 22.73,
+                      borderRadius: 11.365,
+                      backgroundColor: '#ffffff',
+                      alignSelf: 'flex-start',
+                    }} />}
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
+                  activeOpacity={0.7}
+                  style={styles.termsTextContainer}>
+                  <Text style={styles.termsText}>
+                    <Text style={styles.termsTextRegular}>
+                      By sign-up, you agree to our{' '}
+                    </Text>
+                    <Text style={styles.termsLink}>
+                      Terms and Conditions
+                    </Text>
+                    <Text style={styles.termsTextRegular}>
+                      .
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              {errors.agreeToTerms && (
                 <Typography
                   size={12}
                   type={Font.GeneralSans_Regular}
                   color={Colors.red}
                   style={styles.errorText}>
-                  {errors.phoneNumber}
+                  {errors.agreeToTerms}
                 </Typography>
               )}
-            </View>
 
-            <View style={styles.inputContainer}>
-              <Input
-                title="Email Address"
-                placeholder="example@gmail.com"
-                value={formData.email}
-                onChange={value => handleInputChange('email', value)}
-                keyboardType="email-address"
-                showTitle={true}
-                placeholderTextColor="#8C8C8C"
-                error={errors.email}
+              <Button
+                title={loading ? "SAVING..." : "CONTINUE"}
+                disabled={loading}
+                onPress={handleContinue}
+                style={styles.button}
+                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
+                title_style={styles.buttonText}
               />
             </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Location"
-                placeholder="Select Location"
-                value={formData.location}
-                onChange={value => handleInputChange('location', value)}
-                showTitle={true}
-                placeholderTextColor="#8C8C8C"
-                error={errors.location}
-                onPress={() => {
-                  // Handle location picker
-                }}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Experience (Years)"
-                placeholder="select year"
-                value={formData.experience}
-                onChange={value => handleInputChange('experience', value)}
-                keyboardType="numeric"
-                showTitle={true}
-                placeholderTextColor="#8C8C8C"
-                error={errors.experience}
-                onPress={() => {
-                  // Handle experience picker
-                }}
-              />
-            </View>
-
-            <View style={styles.termsContainer}>
-            <TouchableOpacity
-                style={styles.toggleContainer}
-                onPress={() => setAgreeToTerms(!agreeToTerms)}
-                activeOpacity={0.7}>
-              <View
-                style={[
-                    styles.toggle,
-                    agreeToTerms && styles.toggleActive,
-                ]}>
-                  {agreeToTerms ? <View style={styles.toggleCircle} />:<View style={{ width: 22.73,
-    height: 22.73,
-    borderRadius: 11.365,
-    backgroundColor: '#ffffff',
-    alignSelf: 'flex-start',}} />}
-              </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
-                activeOpacity={0.7}
-                style={styles.termsTextContainer}>
-                <Text style={styles.termsText}>
-                  <Text style={styles.termsTextRegular}>
-                    By sign-up, you agree to our{' '}
-                  </Text>
-                  <Text style={styles.termsLink}>
-                    Terms and Conditions
-                  </Text>
-                  <Text style={styles.termsTextRegular}>
-                    .
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {errors.agreeToTerms && (
-              <Typography
-                size={12}
-                type={Font.GeneralSans_Regular}
-                color={Colors.red}
-                style={styles.errorText}>
-                {errors.agreeToTerms}
-              </Typography>
-            )}
-
-            <Button
-              title={loading ? "SAVING..." : "CONTINUE"}
-              disabled={loading}
-              onPress={handleContinue}
-              style={styles.button}
-              linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
-              title_style={styles.buttonText}
-            />
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 };

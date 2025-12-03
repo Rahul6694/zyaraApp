@@ -9,13 +9,11 @@ import ProfileSetup from '../Screens/BeauticianScreen/ProfileSetup';
 import KYCVerificationStep1 from '../Screens/BeauticianScreen/KYCVerificationStep1';
 import KYCVerificationStep2 from '../Screens/BeauticianScreen/KYCVerificationStep2';
 import BankVerification from '../Screens/BeauticianScreen/BankVerification';
+import BeauticianSettingProfile from '../Screens/BeauticianScreen/BeauticianSettingProfile';
 import CMSScreen from '../Screens/CMSScreen';
 import createBottomTabNavigator from '../Navigation/BeauticianBottomTabs';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../Constants/Colors';
 
 const Stack = createStackNavigator();
-
 const BeauticianStack = () => {
   const navigation = useNavigation();
   const isAuth = useSelector(state => state.isAuth);
@@ -87,6 +85,12 @@ const BeauticianStack = () => {
         component={createBottomTabNavigator}
         initialParams={{userType: 'beautician'}}
       />
+      <Stack.Screen 
+        name="BeauticianSettingProfile" 
+        component={BeauticianSettingProfile}
+      
+      />
+      
     </Stack.Navigator>
   );
 };

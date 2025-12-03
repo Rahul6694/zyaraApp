@@ -45,4 +45,5 @@ export const ImageConstant = {
   Categories:require('../../assets/Images/Categories.png'),
   No : require('../../assets/Images/No.png'),
   homePay : require('../../assets/Images/homePay.png'),
+    email : require('../../assets/Images/email.png'),
 };

@@ -83,6 +83,7 @@ const Login = () => {
           phoneNumber: validation.cleanMobile,
           userType: userType,
           isLogin: true,
+          step: response.data.signup_step
         });
       },
       (error) => {
@@ -159,7 +160,7 @@ const Login = () => {
             />
           </View>
         </ScrollView>
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.signupLink}
           onPress={() => navigation.navigate('SignIn')}>
           <Typography
@@ -175,7 +176,7 @@ const Login = () => {
               SignUp here 
             </Typography>
           </Typography>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </KeyboardAvoidingView>
     </View>
     </SafeAreaView>

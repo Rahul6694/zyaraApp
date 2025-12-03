@@ -88,9 +88,12 @@ const SignIn = () => {
       (error) => {
         setLoading(false);
         console.log('OTP send error:', error);
+        if(error?.data?.message ==="User with this phone number not found"){
+          navigation.navigate('SignUp')
+        }else{
         const errorMessage = error?.data?.message || error?.message || 'Failed to send OTP. Please try again.';
         SimpleToast.show(errorMessage, SimpleToast.SHORT);
-        setPhoneError(errorMessage);
+        setPhoneError(errorMessage);} 
       },
     );
   };
@@ -164,7 +167,7 @@ const SignIn = () => {
           
           </View>
         </ScrollView>
-        <TouchableOpacity style={styles.signupLink} 
+        {/* <TouchableOpacity style={styles.signupLink} 
         onPress={()=>navigation.navigate('SignUp')}>
               <Typography
                 size={16}
@@ -179,7 +182,7 @@ const SignIn = () => {
                    Signup here
                 </Typography>
               </Typography>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
       </KeyboardAvoidingView>
     </View>
     </SafeAreaView>  );

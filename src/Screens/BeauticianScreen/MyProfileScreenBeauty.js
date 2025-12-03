@@ -19,7 +19,7 @@ import SimpleToast from "react-native-simple-toast";
 import { BASE_URL } from "../../Backend/env";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const MyProfileScreenBeauty = () => {
+const MyProfileScreenBeauty = ({navigation}) => {
   const dispatch = useDispatch();
   const userDetails = useSelector(state => state.userDetails) || {};
   const [imageError, setImageError] = useState(false);
@@ -141,7 +141,7 @@ const MyProfileScreenBeauty = () => {
 
         {/* MENU LIST */}
         <View style={styles.menuContainer}>
-          <MenuItem title="My Profile" icon={ImageConstant.user} subtitle="View or change profile details" />
+          <MenuItem title="My Profile" icon={ImageConstant.user} subtitle="View or change profile details"  onPress={()=>navigation.navigate('BeauticianSettingProfile')}/>
           <MenuItem title="Manage Address" icon={ImageConstant.location2} subtitle="Share, Edit & Add Address" />
           <MenuItem title="Help & Support" icon={ImageConstant.help} subtitle="FAQs and links" />
           <MenuItem title="Settings" icon={ImageConstant.setting} subtitle="Manage your account setting" />
@@ -186,8 +186,8 @@ const TopBox = ({ label , icon}) => (
 );
 
 /* MENU ITEM COMPONENT */
-const MenuItem = ({ title, subtitle, icon }) => (
-  <TouchableOpacity style={styles.menuItem}>
+const MenuItem = ({ title, subtitle, icon, onPress }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={{ flexDirection: "row", justifyContent:'space-between', alignItems:'center' }}>
 
      <View style={{flexDirection:'row', alignItems:'center'}}>
