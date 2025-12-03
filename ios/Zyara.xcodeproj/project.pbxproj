@@ -25,9 +25,6 @@
 		B5EB6650F0194ED58C280672 /* GeneralSans-SemiboldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A908DC022BEC422A84524CAD /* GeneralSans-SemiboldItalic.ttf */; };
 		7D0D42FBF50842838F0505EC /* GeneralSans-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA6FA83C08944A509736FAC3 /* GeneralSans-Variable.ttf */; };
 		911D2A0902AE492BA359C807 /* GeneralSans-VariableItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BAC86B4A406946E4A6167C4B /* GeneralSans-VariableItalic.ttf */; };
-		A1632587BB6E4299B17631A5 /* chose1.png in Resources */ = {isa = PBXBuildFile; fileRef = A367B06811C64FF38A0CA4FE /* chose1.png */; };
-		891CF3DEBDA645D8A21F7BA5 /* chose2.png in Resources */ = {isa = PBXBuildFile; fileRef = 7351B3ECE4CF43BFBBA2CF0A /* chose2.png */; };
-		B50FBBAADA5541798728FEFA /* girl.png in Resources */ = {isa = PBXBuildFile; fileRef = 51A480737C4B4ACE9AB8ABFF /* girl.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,9 +52,6 @@
 		A908DC022BEC422A84524CAD /* GeneralSans-SemiboldItalic.ttf */ = {isa = PBXFileReference; name = "GeneralSans-SemiboldItalic.ttf"; path = "../assets/fonts/GeneralSans-SemiboldItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		AA6FA83C08944A509736FAC3 /* GeneralSans-Variable.ttf */ = {isa = PBXFileReference; name = "GeneralSans-Variable.ttf"; path = "../assets/fonts/GeneralSans-Variable.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		BAC86B4A406946E4A6167C4B /* GeneralSans-VariableItalic.ttf */ = {isa = PBXFileReference; name = "GeneralSans-VariableItalic.ttf"; path = "../assets/fonts/GeneralSans-VariableItalic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		A367B06811C64FF38A0CA4FE /* chose1.png */ = {isa = PBXFileReference; name = "chose1.png"; path = "../assets/Images/chose1.png"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		7351B3ECE4CF43BFBBA2CF0A /* chose2.png */ = {isa = PBXFileReference; name = "chose2.png"; path = "../assets/Images/chose2.png"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		51A480737C4B4ACE9AB8ABFF /* girl.png */ = {isa = PBXFileReference; name = "girl.png"; path = "../assets/Images/girl.png"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,9 +143,6 @@
 				A908DC022BEC422A84524CAD /* GeneralSans-SemiboldItalic.ttf */,
 				AA6FA83C08944A509736FAC3 /* GeneralSans-Variable.ttf */,
 				BAC86B4A406946E4A6167C4B /* GeneralSans-VariableItalic.ttf */,
-				A367B06811C64FF38A0CA4FE /* chose1.png */,
-				7351B3ECE4CF43BFBBA2CF0A /* chose2.png */,
-				51A480737C4B4ACE9AB8ABFF /* girl.png */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -233,9 +224,6 @@
 				B5EB6650F0194ED58C280672 /* GeneralSans-SemiboldItalic.ttf in Resources */,
 				7D0D42FBF50842838F0505EC /* GeneralSans-Variable.ttf in Resources */,
 				911D2A0902AE492BA359C807 /* GeneralSans-VariableItalic.ttf in Resources */,
-				A1632587BB6E4299B17631A5 /* chose1.png in Resources */,
-				891CF3DEBDA645D8A21F7BA5 /* chose2.png in Resources */,
-				B50FBBAADA5541798728FEFA /* girl.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

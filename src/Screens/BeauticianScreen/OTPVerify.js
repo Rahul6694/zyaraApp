@@ -23,10 +23,13 @@ import Typography from '../../Component/UI/Typography';
 import Button from '../../Component/Button';
 import {ImageConstant} from '../../Constants/ImageConstant';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 import {validateOTP} from '../../Utils/Validation';
 import {beauticianVerifyOTP, beauticianResendOTPSignup, beauticianSendOTP} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ScreenHeader from '../../Component/ScreenHeader';
+import {Token, setUserType, isAuth, userDetails} from '../../Redux/action';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 const CELL_COUNT = 4;
@@ -34,8 +37,9 @@ const CELL_COUNT = 4;
 const OTPVerify = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const dispatch = useDispatch();
   const phoneNumber = route?.params?.phoneNumber || '+91 9977787907';
-  const userType = route?.params?.userType || 'customer';
+  const userType = route?.params?.userType || 'beautician';
   const isLogin = route?.params?.isLogin || false;
   const [value, setValue] = useState('');
   const [otpError, setOtpError] = useState('');
@@ -82,26 +86,36 @@ const OTPVerify = () => {
         console.log('OTP verified successfully:', response);
         SimpleToast.show('OTP verified successfully', SimpleToast.SHORT);
         
+        // Extract token and user data from response
+        const token = response?.token || response?.data?.token || response?.data?.access_token;
+        const beauticianId = response?.beautician_id || response?.data?.beautician_id || response?.data?.id;
+        const userData = response?.beautician || response?.user || response?.data?.beautician || response?.data?.user || response?.data || {};
+        
         if (isLogin) {
-          // For login flow - navigate to Home
-          navigation.navigate('Home', {userType: 'beautician'});
-        } else {
-          // For signup flow - Extract token and navigate to Step 1
-          const token = response?.token || response?.data?.token || response?.data?.access_token;
-          const beauticianId = response?.beautician_id || response?.data?.beautician_id || response?.data?.id;
+          // For login flow: Save to Redux and navigate to Home
+          dispatch(Token(token));
+          dispatch(isAuth(true));
+          dispatch(setUserType('beautician'));
           
-          if (!token) {
-            SimpleToast.show('Token not received. Please try again.', SimpleToast.SHORT);
-            return;
+          // Save user details to Redux
+          if (userData && Object.keys(userData).length > 0) {
+            dispatch(userDetails(userData));
           }
           
-          // Navigate to Step 1 (KYCVerificationStep1) with token
+          // Navigate to Home screen
+          navigation.reset({
+            index: 0,
+            routes: [{name: 'Home', params: {userType: 'beautician'}}],
+          });
+        } else {
+          // For signup flow: Navigate to KYC Step 1
           navigation.navigate('KYCVerificationStep1', {
             userType: userType,
             token: token,
             beauticianId: beauticianId,
           });
         }
+        
       },
       (error) => {
         setLoading(false);
@@ -166,8 +180,9 @@ const OTPVerify = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       
       {/* Background Gradient */}
       <LinearGradient
@@ -178,7 +193,7 @@ const OTPVerify = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader showLogo={true} showGreenLine={false} />
+      <ScreenHeader showLogo={true} style={{paddingTop:10}} showGreenLine={false} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -298,7 +313,7 @@ const OTPVerify = () => {
             </View>
       </KeyboardAvoidingView>
     </View>
-  );
+    </SafeAreaView> );
 };
 
 export default OTPVerify;
@@ -384,7 +399,7 @@ marginTop:20
   linksContainer: {
     alignItems: 'center',
    
-  marginBottom:30
+  marginBottom:10
   },
   linkText: {
     textAlign: 'center',

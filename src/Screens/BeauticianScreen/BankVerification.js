@@ -18,15 +18,19 @@ import Input from '../../Component/Input';
 import Button from '../../Component/Button';
 import {ImageConstant} from '../../Constants/ImageConstant';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 import {beauticianSignupStep4} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ScreenHeader from '../../Component/ScreenHeader';
+import {isAuth, setUserType, userDetails, Token} from '../../Redux/action';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
 const BankVerification = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const dispatch = useDispatch();
   const token = route?.params?.token;
   const beauticianId = route?.params?.beauticianId;
   const [formData, setFormData] = useState({
@@ -99,6 +103,24 @@ const BankVerification = () => {
         console.log('Step 4 completed successfully:', response);
         SimpleToast.show('Bank account submitted for verification', SimpleToast.SHORT);
         
+        // Extract user data from response
+        const userData = response?.beautician || response?.user || response?.data?.beautician || response?.data?.user || response?.data || {};
+        const responseToken = response?.token || response?.data?.token || response?.data?.access_token || token;
+        
+        // Save token to Redux (use response token if available, otherwise use existing token)
+        if (responseToken) {
+          dispatch(Token(responseToken));
+        }
+        
+        // Set auth state after signup is complete
+        dispatch(isAuth(true));
+        dispatch(setUserType('beautician'));
+        
+        // Save user details to Redux
+        if (userData && Object.keys(userData).length > 0) {
+          dispatch(userDetails(userData));
+        }
+        
         // Navigate to Home after successful submission
         navigation.reset({
           index: 0,
@@ -144,6 +166,24 @@ const BankVerification = () => {
         console.log('Bank account saved successfully:', response);
         SimpleToast.show('Bank account saved successfully', SimpleToast.SHORT);
         
+        // Extract user data from response
+        const userData = response?.beautician || response?.user || response?.data?.beautician || response?.data?.user || response?.data || {};
+        const responseToken = response?.token || response?.data?.token || response?.data?.access_token || token;
+        
+        // Save token to Redux (use response token if available, otherwise use existing token)
+        if (responseToken) {
+          dispatch(Token(responseToken));
+        }
+        
+        // Set auth state after signup is complete
+        dispatch(isAuth(true));
+        dispatch(setUserType('beautician'));
+        
+        // Save user details to Redux
+        if (userData && Object.keys(userData).length > 0) {
+          dispatch(userDetails(userData));
+        }
+        
         // Navigate to Home
         navigation.reset({
           index: 0,
@@ -160,8 +200,9 @@ const BankVerification = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
 
       <LinearGradient
         colors={[Colors.lightGreen, Colors.white]}
@@ -329,7 +370,7 @@ const BankVerification = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
-  );
+    </SafeAreaView> );
 };
 
 export default BankVerification;

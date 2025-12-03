@@ -21,6 +21,8 @@ import {useNavigation, useRoute} from '@react-navigation/native';
 import {validateMobileNumber} from '../../Utils/Validation';
 import {customerSendOTP} from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
+import ScreenHeader from '../../Component/ScreenHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -96,8 +98,9 @@ const SignIn = () => {
  
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       
       
       <LinearGradient
@@ -115,23 +118,7 @@ const SignIn = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image
-                source={ImageConstant.BackArrow}
-                style={styles.backArrow}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <View style={styles.logoContainer}>
-              <Image
-                source={ImageConstant.zyara}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-           
-          </View>
+          <ScreenHeader showLogo={true} style={{paddingTop:10}} showGreenLine={false} />
 
           {/* Content */}
           <View style={styles.content}>
@@ -195,7 +182,7 @@ const SignIn = () => {
             </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
-  );
+    </SafeAreaView>  );
 };
 
 export default SignIn;
@@ -224,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
-    paddingTop: 50,
+    paddingTop: 10,
     paddingBottom: 20,
   },
   backArrow: {
@@ -334,8 +321,8 @@ const styles = StyleSheet.create({
   socialButtonText: {},
   signupLink: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 10,
+    marginBottom: 10,
   },
   signupText: {
     textAlign: 'center',

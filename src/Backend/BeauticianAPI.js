@@ -3,6 +3,7 @@ import {
   POST_JSON,
   POST_WITH_TOKEN,
   POST_FORM_DATA_WITH_TOKEN,
+  DELETE_WITH_TOKEN,
 } from './Backend';
 import {
   BEAUTICIAN_SIGNUP,
@@ -14,6 +15,8 @@ import {
   BEAUTICIAN_SIGNUP_STEP2,
   BEAUTICIAN_SIGNUP_STEP3,
   BEAUTICIAN_SIGNUP_STEP4,
+  BEAUTICIAN_LOGOUT,
+  BEAUTICIAN_DELETE_ACCOUNT,
 } from './api_routes';
 
 /**
@@ -191,6 +194,35 @@ export const beauticianSignupStep4 = (data, token, onSuccess, onError) => {
     BEAUTICIAN_SIGNUP_STEP4,
     data,
     token,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Beautician Logout
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const beauticianLogout = (onSuccess, onError) => {
+  POST_WITH_TOKEN(
+    BEAUTICIAN_LOGOUT,
+    {},
+    null, // Token will be fetched from store automatically
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Beautician Delete Account
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const beauticianDeleteAccount = (onSuccess, onError) => {
+  DELETE_WITH_TOKEN(
+    BEAUTICIAN_DELETE_ACCOUNT,
+    {},
     onSuccess,
     onError,
   );

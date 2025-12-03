@@ -10,6 +10,7 @@ import {
   ScrollView,
   Dimensions,
   TextInput,
+  Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {Colors} from '../../Constants/Colors';
@@ -23,6 +24,8 @@ import {beauticianSignupStep2} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import {validateName, validateEmail, validateMobileNumber} from '../../Utils/Validation';
 import ScreenHeader from '../../Component/ScreenHeader';
+import {getCMSData} from '../../Backend/CMSAPI';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -57,7 +60,7 @@ const ProfileSetup = () => {
     const nameValidation = validateName(formData.fullName);
     if (!nameValidation.isValid) {
       if (nameValidation.errors.includes('name_required')) {
-        newErrors.fullName = 'Full name is required';
+      newErrors.fullName = 'Full name is required';
       } else if (nameValidation.errors.includes('name_too_short')) {
         newErrors.fullName = 'Name must be at least 2 characters';
       } else if (nameValidation.errors.includes('name_too_long')) {
@@ -69,7 +72,7 @@ const ProfileSetup = () => {
     const salonValidation = validateName(formData.salonName);
     if (!salonValidation.isValid) {
       if (salonValidation.errors.includes('name_required')) {
-        newErrors.salonName = 'Salon/Brand name is required';
+      newErrors.salonName = 'Salon/Brand name is required';
       } else if (salonValidation.errors.includes('name_too_short')) {
         newErrors.salonName = 'Salon name must be at least 2 characters';
       } else if (salonValidation.errors.includes('name_too_long')) {
@@ -81,7 +84,7 @@ const ProfileSetup = () => {
     const emailValidation = validateEmail(formData.email);
     if (!emailValidation.isValid) {
       if (emailValidation.errors.includes('email_required')) {
-        newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required';
       } else if (emailValidation.errors.includes('email_invalid')) {
         newErrors.email = 'Please enter a valid email address';
       }
@@ -99,7 +102,7 @@ const ProfileSetup = () => {
         newErrors.phoneNumber = 'Please enter a valid phone number';
       } else if (phoneValidation.errors.includes('mobile_invalid_format')) {
         newErrors.phoneNumber = 'Phone number must contain only digits';
-      }
+    }
     }
     
     // Validate Location
@@ -184,19 +187,17 @@ const ProfileSetup = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
-
+ 
       <LinearGradient
         colors={[Colors.lightGreen, Colors.white]}
         start={{x: 0, y: 0}}
         end={{x: 0, y: 1}}
         style={styles.backgroundGradient}
       />
-
       {/* Fixed Header */}
       <ScreenHeader title="Profile Setup" showGreenLine={true} />
-
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : null}>
@@ -269,7 +270,7 @@ const ProfileSetup = () => {
                   placeholderTextColor="#8C8C8C"
                   value={formData.phoneNumber.replace('+91', '').trim()}
                   onChangeText={value => handleInputChange('phoneNumber', '+91 ' + value)}
-                  keyboardType="phone-pad"
+                keyboardType="phone-pad"
                 />
               </View>
               {errors.phoneNumber && (
@@ -328,29 +329,38 @@ const ProfileSetup = () => {
             </View>
 
             <View style={styles.termsContainer}>
-              <TouchableOpacity
+            <TouchableOpacity
                 style={styles.toggleContainer}
                 onPress={() => setAgreeToTerms(!agreeToTerms)}
                 activeOpacity={0.7}>
-                <View
-                  style={[
+              <View
+                style={[
                     styles.toggle,
                     agreeToTerms && styles.toggleActive,
-                  ]}>
+                ]}>
                   {agreeToTerms ? <View style={styles.toggleCircle} />:<View style={{ width: 22.73,
     height: 22.73,
     borderRadius: 11.365,
     backgroundColor: '#ffffff',
     alignSelf: 'flex-start',}} />}
-                </View>
+              </View>
               </TouchableOpacity>
-              <Typography
-                size={16}
-                type={Font.GeneralSans_Regular}
-                color={Colors.black}
-                style={styles.termsText}>
-                By sign-up, you agree to our Terms and Conditions.
-              </Typography>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
+                activeOpacity={0.7}
+                style={styles.termsTextContainer}>
+                <Text style={styles.termsText}>
+                  <Text style={styles.termsTextRegular}>
+                    By sign-up, you agree to our{' '}
+                  </Text>
+                  <Text style={styles.termsLink}>
+                    Terms and Conditions
+                  </Text>
+                  <Text style={styles.termsTextRegular}>
+                    .
+                  </Text>
+                </Text>
+              </TouchableOpacity>
             </View>
             {errors.agreeToTerms && (
               <Typography
@@ -374,6 +384,7 @@ const ProfileSetup = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
+    </SafeAreaView>
   );
 };
 
@@ -475,9 +486,25 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     alignSelf: 'flex-end',
   },
-  termsText: {
+  termsTextContainer: {
     flex: 1,
+  },
+  termsText: {
+    fontSize: 16,
+    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.black,
     letterSpacing: 0.02,
+    lineHeight: 24,
+    flexWrap: 'wrap',
+  },
+  termsTextRegular: {
+    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.black,
+  },
+  termsLink: {
+    fontFamily: Font.GeneralSans_Medium,
+    color: Colors.zyaraGreen,
+    textDecorationLine: 'underline',
   },
   errorText: {
     marginTop: -15,

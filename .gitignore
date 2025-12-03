@@ -73,3 +73,9 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# React Native Auto-generated Assets
+# These are automatically copied from assets/ folder during build
+android/app/src/main/assets/
+ios/Zyara/Images/
+ios/Zyara/fonts/
