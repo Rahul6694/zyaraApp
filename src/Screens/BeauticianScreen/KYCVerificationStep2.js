@@ -23,6 +23,7 @@ import {beauticianSignupStep3} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import DropdownNew from '../../Component/DropdownNew';
 import ScreenHeader from '../../Component/ScreenHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -144,8 +145,9 @@ const KYCVerificationStep2 = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
 
       <LinearGradient
         colors={[Colors.lightGreen, Colors.white]}
@@ -336,7 +338,7 @@ const KYCVerificationStep2 = () => {
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
-  );
+    </SafeAreaView>);
 };
 
 export default KYCVerificationStep2;

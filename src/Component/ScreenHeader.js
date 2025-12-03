@@ -17,7 +17,10 @@ const ScreenHeader = ({
   title,
   showLogo = false,
   onBackPress,
+  imgstyle,
   showGreenLine = true,
+  style,
+    titlecolor="#090909"
 }) => {
   const navigation = useNavigation();
 
@@ -31,12 +34,13 @@ const ScreenHeader = ({
 
   return (
     <>
-      <View style={styles.header}>
+      <View style={[styles.header,style]}>
         <TouchableOpacity onPress={handleBackPress}>
           <Image
             source={ImageConstant.BackArrow}
-            style={styles.backArrow}
+            style={[styles.backArrow,imgstyle]}
             resizeMode="contain"
+         
           />
         </TouchableOpacity>
         <View style={styles.logoContainer}>
@@ -51,7 +55,7 @@ const ScreenHeader = ({
               <Typography
                 size={22}
                 type={Font.GeneralSans_Medium}
-                color="#090909"
+                color={titlecolor}
                 style={styles.headerTitle}>
                 {title}
               </Typography>
@@ -72,8 +76,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 22.5,
-    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     paddingBottom: 20,
   },
   backArrow: {

@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import {Colors} from '../../Constants/Colors';
@@ -22,6 +23,7 @@ import {validateMobileNumber} from '../../Utils/Validation';
 import {customerSignup} from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ImageModal from '../../Component/Modals/ImageModal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -37,6 +39,8 @@ const SignUp = () => {
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [termsError, setTermsError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleNameChange = (value) => {
@@ -105,6 +109,14 @@ const SignUp = () => {
       isValid = false;
     }
 
+    // Validate Terms and Conditions
+    if (!agreeToTerms) {
+      setTermsError('Please agree to Terms and Conditions');
+      isValid = false;
+    } else {
+      setTermsError('');
+    }
+
     if (!isValid) {
       return;
     }
@@ -158,15 +170,33 @@ const SignUp = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
-
       <LinearGradient
         colors={[Colors.white, Colors.lightGreen]}
         start={{x: 0, y: 1}}
         end={{x: 0, y: 0}}
         style={styles.backgroundGradient}
       />
+
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={ImageConstant.BackArrow}
+            style={styles.backArrow}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        <View style={styles.logoContainer}>
+          <Image
+            source={ImageConstant.zyara}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.placeholder} />
+      </View>
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -175,25 +205,6 @@ const SignUp = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image
-                source={ImageConstant.BackArrow}
-                style={styles.backArrow}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <View style={styles.logoContainer}>
-              <Image
-                source={ImageConstant.zyara}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <View style={styles.placeholder} />
-          </View>
-
           {/* Content */}
           <View style={styles.content}>
             <Typography
@@ -294,6 +305,56 @@ const SignUp = () => {
               />
             </View>
 
+            {/* Terms and Conditions */}
+            <View style={styles.termsContainer}>
+              <TouchableOpacity
+                style={styles.toggleContainer}
+                onPress={() => {
+                  setAgreeToTerms(!agreeToTerms);
+                  if (termsError) {
+                    setTermsError('');
+                  }
+                }}
+                activeOpacity={0.7}>
+                <View
+                  style={[
+                    styles.toggle,
+                    agreeToTerms && styles.toggleActive,
+                  ]}>
+                  {agreeToTerms ? (
+                    <View style={styles.toggleCircle} />
+                  ) : (
+                    <View style={styles.toggleCircleOff} />
+                  )}
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
+                activeOpacity={0.7}
+                style={styles.termsTextContainer}>
+                <Text style={styles.termsText}>
+                  <Text style={styles.termsTextRegular}>
+                    By sign-up, you agree to our{' '}
+                  </Text>
+                  <Text style={styles.termsLink}>
+                    Terms and Conditions
+                  </Text>
+                  <Text style={styles.termsTextRegular}>
+                    .
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {termsError ? (
+              <Typography
+                size={12}
+                type={Font.GeneralSans_Regular}
+                color={Colors.red}
+                style={styles.errorText}>
+                {termsError}
+              </Typography>
+            ) : null}
+
             <Button
               title={loading ? "SENDING..." : "SEND OTP"}
               onPress={handleSignUp}
@@ -304,7 +365,7 @@ const SignUp = () => {
             />
           </View>
         </ScrollView>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.signinLink}
           onPress={() => navigation.goBack()}>
           <Typography
@@ -320,7 +381,7 @@ const SignUp = () => {
               Sign In
             </Typography>
           </Typography>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </KeyboardAvoidingView>
 
       {/* Image Modal for Profile Picture */}
@@ -336,7 +397,7 @@ const SignUp = () => {
         mediaType="photo"
       />
     </View>
-  );
+    </SafeAreaView>);
 };
 
 export default SignUp;
@@ -344,7 +405,7 @@ export default SignUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: 'red',
   },
   backgroundGradient: {
     position: 'absolute',
@@ -358,15 +419,16 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 100,
+    
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
-    paddingTop: 50,
+    paddingTop:10,
     paddingBottom: 20,
+    zIndex: 10,
   },
   backArrow: {
     width: 24,
@@ -413,7 +475,7 @@ const styles = StyleSheet.create({
   signinLink: {
     alignItems: 'center',
     marginTop: 20,
-    marginBottom: 30,
+    marginBottom: 10,
   },
   signinText: {
     textAlign: 'center',
@@ -454,6 +516,66 @@ const styles = StyleSheet.create({
   },
   profilePlaceholderText: {
     textAlign: 'center',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  toggleContainer: {
+    marginRight: 10,
+    marginTop: 2,
+  },
+  toggle: {
+    width: 50,
+    height: 29.31,
+    backgroundColor: '#DDDDDD',
+    borderRadius: 17.5,
+    justifyContent: 'center',
+    paddingHorizontal: 3.41,
+  },
+  toggleActive: {
+    backgroundColor: Colors.zyaraGreen,
+  },
+  toggleCircle: {
+    width: 22.73,
+    height: 22.73,
+    borderRadius: 11.365,
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-end',
+  },
+  toggleCircleOff: {
+    width: 22.73,
+    height: 22.73,
+    borderRadius: 11.365,
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-start',
+  },
+  termsTextContainer: {
+    flex: 1,
+  },
+  termsText: {
+    fontSize: 16,
+    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.black,
+    letterSpacing: 0.02,
+    lineHeight: 24,
+    flexWrap: 'wrap',
+  },
+  termsTextRegular: {
+    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.black,
+  },
+  termsLink: {
+    fontFamily: Font.GeneralSans_Medium,
+    color: Colors.zyaraGreen,
+    textDecorationLine: 'underline',
+  },
+  errorText: {
+    marginTop: -10,
+    marginBottom: 10,
+    marginLeft: 22,
   },
 });
 

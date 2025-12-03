@@ -58,133 +58,107 @@ const Onboarding = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       <View style={styles.contentContainer}>
-        <View style={styles.illustrationWrapper}>
+        <View style={styles.topSection}>
+          <View style={styles.illustrationWrapper}>
+            <Image
+              source={ImageConstant.girl}
+              style={styles.illustration}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.greenLine} />
           <Image
-            source={ImageConstant.girl}
-            style={styles.illustration}
+            source={ImageConstant.welcome}
+            style={styles.welcomeImage}
+            resizeMode="contain"
+          />
+          <Image
+            source={ImageConstant.zyaraApp}
+            style={styles.appNameImage}
             resizeMode="contain"
           />
         </View>
-        <View style={styles.greenLine} />
-        <Image
-          source={ImageConstant.welcome}
-          style={styles.welcomeImage}
-          resizeMode="contain"
-        />
 
-        <Image
-          source={ImageConstant.zyaraApp}
-          style={styles.appNameImage}
-          resizeMode="contain"
-        />
+        <View style={styles.bottomSection}>
+          <Typography
+            size={height < 700 ? 14 : 16}
+            type={Font.GeneralSans_Medium}
+            color={Colors.black}
+            style={styles.userTypeTitle}>
+            Choose your user type
+          </Typography>
 
-  
-        <Typography
-          size={16}
-          type={Font.GeneralSans_Medium}
-          color={Colors.black}
-          style={styles.userTypeTitle}>
-          Choose your user type
-        </Typography>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[
+                styles.userTypeButton,
+                selectedUserType !== 'customer' && styles.userTypeButtonInactive,
+              ]}
+              onPress={() => handleUserTypeSelect('customer')}>
+              <View style={styles.iconContainer}>
+                <Image
+                  source={ImageConstant.image1}
+                  style={[
+                    styles.customerIcon,
+                    selectedUserType === 'customer' && styles.customerIconSelected,
+                  ]}
+                  resizeMode="contain"
+                />
+              </View>
+              <Typography
+                size={height < 700 ? 14 : 16}
+                type={Font.GeneralSans_Regular}
+                color={
+                  selectedUserType === 'customer'
+                    ? Colors.white
+                    : Colors.black
+                }
+                style={styles.customerButtonText}>
+                I'm a {'\n'}Customer
+              </Typography>
+            </TouchableOpacity>
 
-        <View style={styles.buttonRow}>
-
-          <TouchableOpacity
-            style={[
-              styles.userTypeButton,
-              selectedUserType !== 'customer' && styles.userTypeButtonInactive,
-            ]}
-            onPress={() => handleUserTypeSelect('customer')}>
-            <View style={styles.iconContainer}>
-              <Image
-                source={ImageConstant.image1}
-                style={[
-                  styles.customerIcon,
-                  selectedUserType === 'customer' && styles.customerIconSelected,
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-            <Typography
-              size={16}
-              type={Font.GeneralSans_Regular}
-              color={
-                selectedUserType === 'customer'
-                  ? Colors.white
-                  : Colors.black
-              }
-              style={styles.customerButtonText}>
-              I'm a {'\n'}Customer
-            </Typography>
-          </TouchableOpacity>
-
-        
-          <TouchableOpacity
-            style={[
-              styles.userTypeButton,
-              styles.userTypeButtonOutline,
-              selectedUserType === 'beautician' && styles.userTypeButtonSelected,
-            ]}
-            onPress={() => handleUserTypeSelect('beautician')}>
-            <View style={styles.iconContainerOutline}>
-              <Image
-                source={ImageConstant.image2}
-                style={[
-                  styles.beauticianIcon,
-                  selectedUserType === 'beautician' && styles.beauticianIconSelected,
-                ]}
-                resizeMode="contain"
-              />
-            </View>
-            <Typography
-              size={16}
-              type={Font.GeneralSans_Regular}
-              color={
-                selectedUserType === 'beautician'
-                  ? Colors.white
-                  : Colors.black
-              }
-              style={styles.beauticianButtonText}>
-              I'm a{'\n'} Beautician
-            </Typography>
-          </TouchableOpacity>
-        </View>
-
-        {/* Login Link */}
-        {/* <View style={styles.loginContainer} >
-          <View style={styles.loginTextContainer}>
-            <Typography
-              size={16}
-              type={Font.GeneralSans_Regular}
-              color="#090909"
-              style={styles.loginText}>
-              Already have an account?{' '}
-            </Typography>
-            <TouchableOpacity onPress={handleLogin}>
-
-          
-            <Typography
-              size={16}
-              type={Font.GeneralSans_Semibold}
-              color={Colors.zyaraGreen}>
-              Login
-            </Typography>
+            <TouchableOpacity
+              style={[
+                styles.userTypeButton,
+                styles.userTypeButtonOutline,
+                selectedUserType === 'beautician' && styles.userTypeButtonSelected,
+              ]}
+              onPress={() => handleUserTypeSelect('beautician')}>
+              <View style={styles.iconContainerOutline}>
+                <Image
+                  source={ImageConstant.image2}
+                  style={[
+                    styles.beauticianIcon,
+                    selectedUserType === 'beautician' && styles.beauticianIconSelected,
+                  ]}
+                  resizeMode="contain"
+                />
+              </View>
+              <Typography
+                size={height < 700 ? 14 : 16}
+                type={Font.GeneralSans_Regular}
+                color={
+                  selectedUserType === 'beautician'
+                    ? Colors.white
+                    : Colors.black
+                }
+                style={styles.beauticianButtonText}>
+                I'm a{'\n'} Beautician
+              </Typography>
             </TouchableOpacity>
           </View>
-        </View> */}
+        </View>
       </View>
 
-   
       <LinearGradient
         colors={[Colors.white, Colors.lightGreen]}
         start={{x: 0, y: 0}}
         end={{x: 0, y: 1}}
         style={styles.bottomGradient}
       />
-
-     
     </View>
   );
 };
@@ -199,9 +173,21 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: height * 0.04,
     paddingHorizontal: 20,
+    paddingBottom: height * 0.05,
     zIndex: 1,
+    justifyContent: 'space-between',
+  },
+  topSection: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    paddingTop:height * 0.08
+  },
+  bottomSection: {
+    justifyContent: 'flex-end',
+    paddingBottom: height * 0.02,
   },
   bottomGradient: {
     position: 'absolute',
@@ -213,54 +199,60 @@ const styles = StyleSheet.create({
   },
   illustrationWrapper: {
     width: width * 0.58,
-    height: width *0.8,
+    height: height * 0.28,
+    maxHeight: height * 0.3,
     alignSelf: 'center',
-    marginTop: 40,
+    marginTop: height * 0.02,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
- 
- 
   illustration: {
-  height:339,
-   position:'absolute',
-   top:74
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
   },
   greenLine: {
     width: width * 0.74,
     height: 1,
     backgroundColor: Colors.zyaraGreen,
     alignSelf: 'center',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: height * 0.015,
+    marginBottom: height * 0.01,
   },
   welcomeImage: {
     width: width * 0.26,
-    height: 52,
+    height: height * 0.06,
+    maxHeight: 52,
     alignSelf: 'center',
-    marginTop: 20,
+    marginTop: height * 0.01,
   },
   appNameImage: {
     width: width * 0.64,
-    height: 80,
+    height: height * 0.08,
+    maxHeight: 80,
     alignSelf: 'center',
-    marginTop: 10,
+    marginTop: height * 0.005,
   },
   userTypeTitle: {
     textTransform: 'capitalize',
-    marginTop: 30,
+    marginTop: height * 0.02,
+    marginBottom: height * 0.015,
+    textAlign: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 20,
+    marginTop: height * 0.01,
     paddingHorizontal: 0,
     gap: 12,
   },
   userTypeButton: {
     width: (width - 60) / 2,
-    height: 120,
+    height: height * 0.14,
+    maxHeight: 120,
+    minHeight: 100,
     backgroundColor: Colors.zyaraGreen,
     borderRadius: 10,
     borderWidth: 1,
@@ -304,30 +296,38 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
+    width: height * 0.05,
+    maxWidth: 40,
+    height: height * 0.05,
+    maxHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: height * 0.008,
   },
   iconContainerOutline: {
-    width: 40,
-    height: 40,
+    width: height * 0.05,
+    maxWidth: 40,
+    height: height * 0.05,
+    maxHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: height * 0.008,
   },
   customerIcon: {
-    width: 43,
-    height: 44,
+    width: height * 0.055,
+    maxWidth: 43,
+    height: height * 0.055,
+    maxHeight: 44,
     tintColor: Colors.zyaraGreen,
   },
   customerIconSelected: {
     tintColor: Colors.white,
   },
   beauticianIcon: {
-    width: 43,
-    height: 44,
+    width: height * 0.055,
+    maxWidth: 43,
+    height: height * 0.055,
+    maxHeight: 44,
     tintColor: Colors.zyaraGreen,
   },
   beauticianIconSelected: {

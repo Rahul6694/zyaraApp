@@ -22,6 +22,7 @@ import {validateMobileNumber} from '../../Utils/Validation';
 import {beauticianSendOTP} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ScreenHeader from '../../Component/ScreenHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -97,8 +98,10 @@ const SignIn = () => {
  
 
   return (
+
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       
       
       <LinearGradient
@@ -109,7 +112,7 @@ const SignIn = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader showLogo={true} showGreenLine={false} />
+      <ScreenHeader style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -181,6 +184,7 @@ const SignIn = () => {
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
+    </SafeAreaView>
   );
 };
 
@@ -296,8 +300,8 @@ const styles = StyleSheet.create({
   socialButtonText: {},
   signupLink: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 10,
+    marginBottom: 10,
   },
   signupText: {
     textAlign: 'center',

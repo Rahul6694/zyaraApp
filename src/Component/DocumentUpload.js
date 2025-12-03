@@ -51,25 +51,25 @@ const DocumentUpload = ({
         ) : (
           <>
             <Image source={imageSource} style={{width: 40, height: 40}} />
-            <Typography
-              type={Font?.Poppins_Regular}
-              fontWeight={400}
-              size={10}
-              textAlign={"center"}
-              color="#000"
-              lineHeight={15}>
-              {text}
-            </Typography>
-            {text2 && (
-              <Typography
-                type={Font?.Poppins_Regular}
-                fontWeight={400}
-                size={10}
-                textAlign={"center"}
-                color="#000"
-                lineHeight={15}>
-                ({`${text2}`})
-              </Typography>
+        <Typography
+          type={Font?.Poppins_Regular}
+          fontWeight={400}
+          size={10}
+          textAlign={"center"}
+          color="#000"
+          lineHeight={15}>
+          {text}
+        </Typography>
+        {text2 && (
+          <Typography
+            type={Font?.Poppins_Regular}
+            fontWeight={400}
+            size={10}
+            textAlign={"center"}
+            color="#000"
+            lineHeight={15}>
+            ({`${text2}`})
+          </Typography>
             )}
           </>
         )}

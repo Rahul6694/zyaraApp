@@ -1,5 +1,7 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
+import {useSelector} from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
 import Login from '../Screens/BeauticianScreen/Login';
 import SignUp from '../Screens/BeauticianScreen/SignUp';
 import OTPVerify from '../Screens/BeauticianScreen/OTPVerify';
@@ -7,14 +9,36 @@ import ProfileSetup from '../Screens/BeauticianScreen/ProfileSetup';
 import KYCVerificationStep1 from '../Screens/BeauticianScreen/KYCVerificationStep1';
 import KYCVerificationStep2 from '../Screens/BeauticianScreen/KYCVerificationStep2';
 import BankVerification from '../Screens/BeauticianScreen/BankVerification';
-import Home from '../Screens/CustomerScreen/Home';
+import CMSScreen from '../Screens/CMSScreen';
+import createBottomTabNavigator from '../Navigation/BeauticianBottomTabs';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '../Constants/Colors';
 
 const Stack = createStackNavigator();
 
 const BeauticianStack = () => {
+  const navigation = useNavigation();
+  const isAuth = useSelector(state => state.isAuth);
+  const token = useSelector(state => state.Token);
+  const userType = useSelector(state => state.userType);
+
+  useEffect(() => {
+    // If user is authenticated and is beautician, navigate to Home
+    if (isAuth && token && userType === 'beautician') {
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'Home', params: {userType: 'beautician'}}],
+      });
+    }
+  }, [isAuth, token, userType, navigation]);
+
+  // Determine initial route based on auth state
+  const initialRouteName = isAuth && token && userType === 'beautician' ? 'Home' : 'Login';
+
   return (
+  
     <Stack.Navigator
-      initialRouteName="Login"
+      initialRouteName={initialRouteName}
       screenOptions={{
         headerShown: false,
       }}>
@@ -55,8 +79,12 @@ const BeauticianStack = () => {
         initialParams={{userType: 'beautician'}}
       />
       <Stack.Screen 
+        name="CMSScreen" 
+        component={CMSScreen}
+      />
+      <Stack.Screen 
         name="Home" 
-        component={Home}
+        component={createBottomTabNavigator}
         initialParams={{userType: 'beautician'}}
       />
     </Stack.Navigator>

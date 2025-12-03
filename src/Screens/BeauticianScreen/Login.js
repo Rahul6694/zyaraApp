@@ -22,6 +22,7 @@ import {validateMobileNumber} from '../../Utils/Validation';
 import {beauticianSendOTP} from '../../Backend/BeauticianAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ScreenHeader from '../../Component/ScreenHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 
@@ -82,6 +83,7 @@ const Login = () => {
           phoneNumber: validation.cleanMobile,
           userType: userType,
           isLogin: true,
+          step: response.data.signup_step
         });
       },
       (error) => {
@@ -95,8 +97,9 @@ const Login = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       
       <LinearGradient
         colors={[Colors.white, Colors.lightGreen]}
@@ -106,7 +109,7 @@ const Login = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader showLogo={true} showGreenLine={false} />
+      <ScreenHeader style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -157,7 +160,7 @@ const Login = () => {
             />
           </View>
         </ScrollView>
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.signupLink}
           onPress={() => navigation.navigate('SignIn')}>
           <Typography
@@ -173,9 +176,10 @@ const Login = () => {
               SignUp here 
             </Typography>
           </Typography>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </KeyboardAvoidingView>
     </View>
+    </SafeAreaView>
   );
 };
 
@@ -198,7 +202,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 100,
+
   },
   content: {
     flex: 1,
@@ -228,8 +232,8 @@ const styles = StyleSheet.create({
   },
   signupLink: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 10,
+    marginBottom: 10,
   },
   signupText: {
     textAlign: 'center',

@@ -23,9 +23,13 @@ import Typography from '../../Component/UI/Typography';
 import Button from '../../Component/Button';
 import {ImageConstant} from '../../Constants/ImageConstant';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
 import {validateOTP} from '../../Utils/Validation';
 import {customerVerifyOTP, customerVerifyOTPSignup, customerResendOTPSignup, customerSendOTP} from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
+import {Token, setUserType, isAuth, userDetails} from '../../Redux/action';
+import ScreenHeader from '../../Component/ScreenHeader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const {width} = Dimensions.get('window');
 const CELL_COUNT = 4;
@@ -33,6 +37,7 @@ const CELL_COUNT = 4;
 const OTPVerify = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const dispatch = useDispatch();
   const phoneNumber = route?.params?.phoneNumber || '+91 9977787907';
   const userType = route?.params?.userType || 'customer';
   const isSignUp = route?.params?.isSignUp || false;
@@ -80,6 +85,21 @@ const OTPVerify = () => {
         verifyData,
         (response) => {
           console.log('OTP verified for signup:', response);
+          const token = response?.token || response?.data?.token || response?.data?.access_token;
+          const userData = response?.user || response?.data?.user || response?.data || {};
+          
+          // Save token, user type, and user details to Redux
+          if (token) {
+            dispatch(Token(token));
+            dispatch(setUserType('customer'));
+            dispatch(isAuth(true));
+          }
+          
+          // Save user details to Redux
+          if (userData && Object.keys(userData).length > 0) {
+            dispatch(userDetails(userData));
+          }
+          
           // After OTP verification, call signup API
           handleSignupAfterOTP();
         },
@@ -106,8 +126,24 @@ const OTPVerify = () => {
           console.log('OTP verified successfully:', response);
           SimpleToast.show('OTP verified successfully', SimpleToast.SHORT);
           
+          // Extract token and user data from response
+          const token = response?.token || response?.data?.token || response?.data?.access_token;
+          const userData = response?.user || response?.data?.user || response?.data || {};
+          
+          // Save token, user type, and user details to Redux
+          if (token) {
+            dispatch(Token(token));
+            dispatch(setUserType('customer'));
+            dispatch(isAuth(true));
+          }
+          
+          // Save user details to Redux
+          if (userData && Object.keys(userData).length > 0) {
+            dispatch(userDetails(userData));
+          }
+          
           // Navigate to Home for customers
-          navigation.navigate('Home', {userType: userType});
+          
         },
         (error) => {
           setLoading(false);
@@ -122,10 +158,16 @@ const OTPVerify = () => {
 
   const handleSignupAfterOTP = () => {
     // After OTP verification for signup, account is already created
-    // Just navigate to Home
+    // Extract token if available (some APIs return token after signup)
+    // For now, we'll navigate to Home - token might be in signup response
     setLoading(false);
     SimpleToast.show('Account created successfully', SimpleToast.SHORT);
-    navigation.navigate('Home', {userType: userType});
+    
+    // Note: Token might be in signup API response, not OTP response
+    // If signup API returns token, save it here
+    // For now, user will need to login after signup
+    
+   
   };
 
   const handleResend = () => {
@@ -183,8 +225,9 @@ const OTPVerify = () => {
   };
 
   return (
+    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+ 
       
       {/* Background Gradient */}
       <LinearGradient
@@ -202,23 +245,7 @@ const OTPVerify = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image
-                source={ImageConstant.BackArrow}
-                style={styles.backArrow}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <View style={styles.logoContainer}>
-              <Image
-                source={ImageConstant.zyara}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-           
-          </View>
+          <ScreenHeader showLogo={true} style={{paddingTop:10}} showGreenLine={false} />
 
           {/* Content */}
           <View style={styles.content}>
@@ -333,7 +360,7 @@ const OTPVerify = () => {
             </View>
       </KeyboardAvoidingView>
     </View>
-  );
+    </SafeAreaView> );
 };
 
 export default OTPVerify;
@@ -362,8 +389,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
-    paddingTop: 50,
-    paddingBottom: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   backArrow: {
     width: 24,
@@ -450,8 +477,7 @@ marginTop:20
   },
   linksContainer: {
     alignItems: 'center',
-   
-  marginBottom:30
+  marginBottom:10
   },
   linkText: {
     textAlign: 'center',

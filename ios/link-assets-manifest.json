@@ -56,18 +56,6 @@
     {
       "path": "assets/fonts/GeneralSans-VariableItalic.ttf",
       "sha1": "f3d62b45179570481bf8c87eae0c917f16f2cb78"
-    },
-    {
-      "path": "assets/Images/chose1.png",
-      "sha1": "a8ee069736beb98c5c3468fc82ed532ee7aa21a8"
-    },
-    {
-      "path": "assets/Images/chose2.png",
-      "sha1": "19b563b4cadd9374b786ab5175a4910bad28b376"
-    },
-    {
-      "path": "assets/Images/girl.png",
-      "sha1": "cb5a8b4162949a5cd1843bfed640187840f49c92"
     }
   ]
 }

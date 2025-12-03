@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,12 +10,15 @@ import {
   ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {Colors} from '../../Constants/Colors';
-import {Font} from '../../Constants/Font';
+import { useDispatch } from 'react-redux';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
-import {ImageConstant} from '../../Constants/ImageConstant';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { logOut } from '../../Redux/action';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // Static Data
 const categoriesData = [
@@ -107,9 +110,21 @@ const nearbyBeauticians = [
 ];
 
 const Home = () => {
-  const [cartItems, setCartItems] = useState(5);
 
-  const renderCategoryItem = ({item}) => (
+  const [cartItems, setCartItems] = useState(0);
+  const insets = useSafeAreaInsets();
+
+  const renderCategoryItem = ({ item }) => (
+    <LinearGradient
+  colors={["#FFFFFF", "#FFF8F8"]}
+  start={{ x: 0, y: 0 }}
+  end={{ x: 0, y: 1 }}
+  style={{
+    paddingBottom:10
+  }}
+>
+
+
     <TouchableOpacity style={styles.categoryCard}>
       <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
       <Typography
@@ -120,9 +135,10 @@ const Home = () => {
         {item.title}
       </Typography>
     </TouchableOpacity>
+    </LinearGradient>
   );
 
-  const renderServiceItem = ({item}) => (
+  const renderServiceItem = ({ item }) => (
     <View style={styles.serviceCard}>
       <Image source={item.image} style={styles.serviceImage} resizeMode="cover" />
       <View style={styles.serviceInfo}>
@@ -155,7 +171,7 @@ const Home = () => {
             color={Colors.black}>
             {item.price}
           </Typography>
-          <TouchableOpacity style={styles.addToCartButton}>
+          <TouchableOpacity style={styles.addToCartButton} onPress={()=>setCartItems(cartItems+1)}>
             <Typography
               size={16}
               type={Font.GeneralSans_Medium}
@@ -169,45 +185,45 @@ const Home = () => {
     </View>
   );
 
-  const renderBeauticianItem = ({item}) => (
+  const renderBeauticianItem = ({ item }) => (
     <View style={styles.beauticianCard}>
-      <View style={{flexDirection:'row', alignItems:'center'}}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
 
-   
-      <Image source={item.image} style={styles.beauticianImage} resizeMode="cover" />
-      <View>
-      <Typography
-        size={16}
-        type={Font.GeneralSans_Semibold}
-        color="#242424"
-        style={styles.beauticianName}>
-        {item.name}
-      </Typography>
-      <Typography
-        size={16}
-        type={Font.GeneralSans_Regular}
-        color="#191919"
-        style={styles.beauticianExp}>
-        {item.experience}
-        <Typography
-          size={14}
-          type={Font.GeneralSans_Regular}
-          color="#191919">
-          {''} ⭐{item.rating}
-        </Typography>
-      </Typography>
-      <View style={styles.beauticianRatingRow}>
-       
-        <View style={styles.dot} />
-        <Typography
-          size={14}
-          type={Font.GeneralSans_Regular}
-          color={Colors.black}>
-          {item.timeSlot}
-        </Typography>
-        <View style={styles.dot} />
+
+        <Image source={item.image} style={styles.beauticianImage} resizeMode="cover" />
+        <View>
+          <Typography
+            size={16}
+            type={Font.GeneralSans_Semibold}
+            color="#242424"
+            style={styles.beauticianName}>
+            {item.name}
+          </Typography>
+          <Typography
+            size={16}
+            type={Font.GeneralSans_Regular}
+            color="#191919"
+            style={styles.beauticianExp}>
+            {item.experience}
+            <Typography
+              size={14}
+              type={Font.GeneralSans_Regular}
+              color="#191919">
+              {''} ⭐{item.rating}
+            </Typography>
+          </Typography>
+          <View style={styles.beauticianRatingRow}>
+
+            <View style={styles.dot} />
+            <Typography
+              size={14}
+              type={Font.GeneralSans_Regular}
+              color={Colors.black}>
+              {item.timeSlot}
+            </Typography>
+            <View style={styles.dot} />
+          </View>
         </View>
-      </View>
       </View>
       <View style={styles.beauticianPriceRow}>
         <Typography
@@ -217,35 +233,35 @@ const Home = () => {
           {item.price}
         </Typography>
       </View>
-    
+
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.white} />
+
+    <View style={[styles.container, {paddingTop:insets.top}]}>
 
       {/* Top Gradient */}
       <LinearGradient
-        colors={[Colors.white, Colors.lightGreen]}
-        start={{x: 0, y: 0}}
-        end={{x: 0, y: 1}}
+        colors={[ Colors.lightGreen,Colors.white]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.topGradient}
       />
 
       {/* Middle Gradient */}
       <LinearGradient
         colors={[Colors.white, '#FFF8F8']}
-        start={{x: 0, y: 0}}
-        end={{x: 0, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.middleGradient}
       />
 
       {/* Bottom Gradient */}
       <LinearGradient
         colors={[Colors.white, Colors.lightGreen]}
-        start={{x: 0, y: 0}}
-        end={{x: 0, y: 1}}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={styles.bottomGradient}
       />
 
@@ -255,18 +271,35 @@ const Home = () => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.locationContainer}>
-            <Image
-              source={ImageConstant.Location}
-              style={styles.locationIcon}
-              resizeMode="contain"
-            />
+
             <View>
-              <Typography
-                size={18}
-                type={Font.GeneralSans_Semibold}
-                color={Colors.black}>
-                Home
-              </Typography>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+
+
+                <Image
+                  source={ImageConstant.Location}
+                  style={styles.locationIcon}
+                  resizeMode="contain"
+                />
+                <Typography
+                  size={18}
+                  type={Font.GeneralSans_Semibold}
+                  color={Colors.black}>
+                  Home
+                </Typography>
+
+                <Image
+                  source={ImageConstant.nextarrow}
+                  style={{
+                    height: 14,
+                    width: 27,
+                    marginTop: 3,
+                    resizeMode: "contain",
+                    transform: [{ rotate: "90deg" }],
+                  }}
+                />
+
+              </View>
               <Typography
                 size={15}
                 type={Font.GeneralSans_Regular}
@@ -275,22 +308,22 @@ const Home = () => {
               </Typography>
             </View>
           </View>
-          <TouchableOpacity style={styles.notificationContainer}>
-            <Image
-              source={ImageConstant.notification}
-              style={styles.bellIcon}
-              resizeMode="contain"
-            />
-            
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.notificationContainer}>
-            <Image
-              source={ImageConstant.notification}
-              style={styles.bellIcon}
-              resizeMode="contain"
-            />
-           
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.notificationContainer}>
+              <Image
+                source={ImageConstant.buket}
+                style={styles.bellIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.notificationContainer}>
+              <Image
+                source={ImageConstant.notification}
+                style={styles.bellIcon}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search Bar */}
@@ -393,38 +426,7 @@ const Home = () => {
         </View>
 
         {/* View Cart Button */}
-        {cartItems > 0 && (
-          <View style={styles.viewCartContainer}>
-            <TouchableOpacity style={styles.viewCartButton}>
-              <View style={styles.viewCartContent}>
-                <View>
-                  <Typography
-                    size={18}
-                    type={Font.GeneralSans_Semibold}
-                    color={Colors.white}
-                    style={styles.viewCartText}>
-                    View Carts
-                  </Typography>
-                  <Typography
-                    size={16}
-                    type={Font.GeneralSans_Regular}
-                    color={Colors.white}
-                    style={styles.viewCartItems}>
-                    {cartItems} Items
-                  </Typography>
-                </View>
-                <View style={styles.cartBadge}>
-                  <Typography
-                    size={14}
-                    type={Font.GeneralSans_Bold}
-                    color={Colors.white}>
-                    {cartItems}
-                  </Typography>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
+       
 
         {/* Recommended for you */}
         <View style={styles.sectionContainer}>
@@ -496,9 +498,44 @@ const Home = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.beauticiansList}
           />
+          
         </View>
+        
       </ScrollView>
+      {cartItems>0 && (
+          <View style={styles.viewCartContainer}>
+            <TouchableOpacity style={styles.viewCartButton}>
+              <View style={styles.viewCartContent}>
+                <View style={{paddingLeft:15}}>
+                  <Typography
+                    size={15}
+                    type={Font.GeneralSans_Semibold}
+                    color={Colors.white}
+                    style={styles.viewCartText}>
+                    View Carts
+                  </Typography>
+                  <Typography
+                    size={13}
+                    type={Font.GeneralSans_Regular}
+                    color={Colors.white}
+                    style={styles.viewCartItems}>
+                    {cartItems} Items
+                  </Typography>
+                </View>
+                <View style={styles.cartBadge}>
+                  <Typography
+                    size={12}
+                    type={Font.GeneralSans_Bold}
+                    color={Colors.white}>
+                    {cartItems}
+                  </Typography>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
     </View>
+
   );
 };
 
@@ -538,8 +575,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.077,
+    paddingTop:10,
     paddingBottom: height * 0.022,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.03,
   },
   locationContainer: {
     flexDirection: 'row',
@@ -554,6 +596,12 @@ const styles = StyleSheet.create({
   },
   notificationContainer: {
     position: 'relative',
+  },
+  logoutButton: {
+    backgroundColor: Colors.zyaraGreen,
+    borderRadius: width * 0.04,
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.008,
   },
   bellIcon: {
     width: width * 0.056,
@@ -633,9 +681,9 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: 166,
-    height:166,
-    resizeMode:'contain',
-   
+    height: 166,
+    resizeMode: 'contain',
+
   },
   sectionContainer: {
     paddingHorizontal: width * 0.05,
@@ -656,7 +704,9 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.016,
   },
   categoriesList: {
+ 
     paddingRight: width * 0.047,
+   
   },
   categoryCard: {
     width: width * 0.28,
@@ -676,17 +726,18 @@ const styles = StyleSheet.create({
   },
   viewCartContainer: {
     paddingHorizontal: width * 0.05,
-    marginBottom: height * 0.022,
+    marginBottom: height * 0.011,
     alignItems: 'center',
+    position:'absolute', bottom:0, zIndex:1, alignSelf:'center'
   },
   viewCartButton: {
-    width: width * 0.428,
-    height: height * 0.065,
+width:'65%',
+    height: height * 0.049,
     backgroundColor: Colors.zyaraGreen,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: Colors.zyaraGreen,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   viewCartContent: {
@@ -694,7 +745,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: width * 0.047,
+ 
   },
   viewCartText: {
     textTransform: 'capitalize',
@@ -711,6 +762,8 @@ const styles = StyleSheet.create({
     borderColor: '#3ABF5F',
     alignItems: 'center',
     justifyContent: 'center',
+
+
   },
   servicesList: {
     paddingRight: width * 0.047,

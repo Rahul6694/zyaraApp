@@ -1,5 +1,5 @@
-// beauticians
-export const GET_CMS_DATA = 'cms-page';
+// CMS APIs
+export const GET_CMS_DATA = 'cms/slug';
 
 // Beautician APIs - Old (keeping for backward compatibility)
 export const BEAUTICIAN_SIGNUP = 'beauticians/signup';
@@ -20,4 +20,12 @@ export const USER_VERIFY_OTP_SIGNUP = 'users/verify-otp-signup';
 export const USER_RESEND_OTP_SIGNUP = 'users/resend-otp-signup';
 export const USER_SEND_OTP = 'users/send-otp';
 export const USER_VERIFY_OTP = 'users/verify-otp';
+export const USER_LOGOUT = 'users/logout';
+export const USER_DELETE_ACCOUNT = 'users/delete-account';
+
+// Beautician Logout
+export const BEAUTICIAN_LOGOUT = 'Beautician/logout';
+
+// Beautician Delete Account
+export const BEAUTICIAN_DELETE_ACCOUNT = 'beauticians/delete-account';
   

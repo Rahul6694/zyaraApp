@@ -1,6 +1,8 @@
 import {
   POST_FORM_DATA,
   POST_JSON,
+  POST_WITH_TOKEN,
+  DELETE_WITH_TOKEN,
 } from './Backend';
 import {
   USER_SIGNUP,
@@ -8,6 +10,8 @@ import {
   USER_RESEND_OTP_SIGNUP,
   USER_SEND_OTP,
   USER_VERIFY_OTP,
+  USER_LOGOUT,
+  USER_DELETE_ACCOUNT,
 } from './api_routes';
 
 /**
@@ -84,6 +88,35 @@ export const customerVerifyOTP = (data, onSuccess, onError) => {
   POST_JSON(
     USER_VERIFY_OTP,
     data,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Customer/User Logout
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const customerLogout = (onSuccess, onError) => {
+  POST_WITH_TOKEN(
+    USER_LOGOUT,
+    {},
+    null, // Token will be fetched from store automatically
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Customer/User Delete Account
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const customerDeleteAccount = (onSuccess, onError) => {
+  DELETE_WITH_TOKEN(
+    USER_DELETE_ACCOUNT,
+    {},
     onSuccess,
     onError,
   );
