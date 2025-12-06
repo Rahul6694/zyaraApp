@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,20 +11,20 @@ import {
   Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {Colors} from '../../Constants/Colors';
-import {Font} from '../../Constants/Font';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
 import Input from '../../Component/Input';
 import Button from '../../Component/Button';
-import {ImageConstant} from '../../Constants/ImageConstant';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {validateMobileNumber} from '../../Utils/Validation';
-import {customerSendOTP} from '../../Backend/CustomerAPI';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { validateMobileNumber } from '../../Utils/Validation';
+import { customerSendOTP } from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ScreenHeader from '../../Component/ScreenHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const SignIn = () => {
   const navigation = useNavigation();
@@ -45,7 +45,7 @@ const SignIn = () => {
   const handleSendOTP = () => {
     // Validate phone number
     const validation = validateMobileNumber(phoneNumber);
-    
+
     if (!validation.isValid) {
       // Set appropriate error message
       if (validation.errors.includes('mobile_required')) {
@@ -88,86 +88,91 @@ const SignIn = () => {
       (error) => {
         setLoading(false);
         console.log('OTP send error:', error);
-        if(error?.data?.message ==="User with this phone number not found"){
-          navigation.navigate('SignUp')
-        }else{
-        const errorMessage = error?.data?.message || error?.message || 'Failed to send OTP. Please try again.';
-        SimpleToast.show(errorMessage, SimpleToast.SHORT);
-        setPhoneError(errorMessage);} 
+        if (error?.data?.message === "User with this phone number not found") {
+          navigation.navigate('SignUp', {
+          phoneNumber:phoneNumber,
+          userType: userType,
+        });
+          
+        } else {
+          const errorMessage = error?.data?.message || error?.message || 'Failed to send OTP. Please try again.';
+          SimpleToast.show(errorMessage, SimpleToast.SHORT);
+          setPhoneError(errorMessage);
+        }
       },
     );
   };
 
- 
+
 
   return (
-    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
-    <View style={styles.container}>
- 
-      
-      
-      <LinearGradient
-        colors={[Colors.white, Colors.lightGreen]}
-        start={{x: 0, y: 1}}
-        end={{x: 0, y: 0}}
-        style={styles.backgroundGradient}
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.lightGreen }}>
+      <View style={styles.container}>
 
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : null}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
-          {/* Header */}
-          <ScreenHeader showLogo={true} style={{paddingTop:10}} showGreenLine={false} />
 
-          {/* Content */}
-          <View style={styles.content}>
-            <Typography
-              size={35}
-              type={Font.GeneralSans_Bold}
-              color="#00210B"
-              style={styles.title}>
-              Sign In
-            </Typography>
 
-            <Typography
-              size={20}
-              type={Font.GeneralSans_Regular}
-              color="#383838"
-              style={styles.subtitle}>
-              Welcome back!{'\n'}Please sign in to continue.
-            </Typography>
+        <LinearGradient
+          colors={[Colors.white, Colors.lightGreen]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.backgroundGradient}
+        />
 
-            <View style={styles.inputContainer}>
-              <Input
-                title="Phone Number"
-                placeholder="phone number"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                keyboardType="phone-pad"
-                showTitle={true}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                error={phoneError}
-                maxLength={10}
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : null}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled">
+            {/* Header */}
+            <ScreenHeader showLogo={true} style={{ paddingTop: 10 }} showGreenLine={false} />
+
+            {/* Content */}
+            <View style={styles.content}>
+              <Typography
+                size={35}
+                type={Font.GeneralSans_Bold}
+                color="#00210B"
+                style={styles.title}>
+                Sign In
+              </Typography>
+
+              <Typography
+                size={20}
+                type={Font.GeneralSans_Regular}
+                color="#383838"
+                style={styles.subtitle}>
+                Welcome back!{'\n'}Please sign in to continue.
+              </Typography>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Phone Number"
+                  placeholder="phone number"
+                  value={phoneNumber}
+                  onChange={handlePhoneChange}
+                  keyboardType="phone-pad"
+                  showTitle={true}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  error={phoneError}
+                  maxLength={10}
+                />
+              </View>
+
+              <Button
+                title={loading ? "SENDING..." : "SEND OTP"}
+                onPress={handleSendOTP}
+                style={styles.button}
+                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
+                title_style={styles.buttonText}
+                disabled={loading}
               />
+
+
             </View>
-
-            <Button
-              title={loading ? "SENDING..." : "SEND OTP"}
-              onPress={handleSendOTP}
-              style={styles.button}
-              linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
-              title_style={styles.buttonText}
-              disabled={loading}
-            />
-
-          
-          </View>
-        </ScrollView>
-        {/* <TouchableOpacity style={styles.signupLink} 
+          </ScrollView>
+          {/* <TouchableOpacity style={styles.signupLink} 
         onPress={()=>navigation.navigate('SignUp')}>
               <Typography
                 size={16}
@@ -183,9 +188,9 @@ const SignIn = () => {
                 </Typography>
               </Typography>
             </TouchableOpacity> */}
-      </KeyboardAvoidingView>
-    </View>
-    </SafeAreaView>  );
+        </KeyboardAvoidingView>
+      </View>
+    </SafeAreaView>);
 };
 
 export default SignIn;

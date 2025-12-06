@@ -12,6 +12,7 @@ import { getCMSData } from '../Backend/CMSAPI';
 import ScreenHeader from '../Component/ScreenHeader';
 import { Colors } from '../Constants/Colors';
 import SimpleToast from 'react-native-simple-toast';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { height } = Dimensions.get('window');
 
@@ -96,7 +97,7 @@ const CMSScreen = ({ route, navigation }) => {
     : 'CMS Page';
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScreenHeader 
         title={formattedTitle} 
         showGreenLine={false}
@@ -175,7 +176,7 @@ const CMSScreen = ({ route, navigation }) => {
           />
         </Animated.View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

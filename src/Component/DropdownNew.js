@@ -92,7 +92,7 @@ const DropdownNew = ({
             {source && (
               <Image source={source} style={[styles.img_style, style_img]} />
             )}
-            <Typography type={Font?.Poppins_Medium} size={15} color='#252D38' style={[styles.txt_style, style_title]}>
+            <Typography type={Font?.GeneralSans_Medium} size={15} color='#252D38' style={[styles.txt_style, style_title]}>
               {title}
             </Typography>
           </View>
@@ -145,7 +145,7 @@ const DropdownNew = ({
                     style={{
                       height: size,
                       width: size,
-                      alignItems: 'center',
+                    
                       justifyContent: 'center',
                     }}>
                     <Image
@@ -155,7 +155,7 @@ const DropdownNew = ({
                         height: 20,
                         width: 20,
                         resizeMode: 'contain',
-                        tintColor: Colors?.blue,
+                       
                         // transform: [{rotate: '90deg'}],
                       }}
                     />
@@ -194,15 +194,17 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   txt_style: {
-    color: Colors.lableColor,
+    color: '#282727',
     fontize: 15,
-    fontFamily: Font.Inter_Medium,
-    marginLeft: 15,
+    fontFamily: Font.GeneralSans_Medium,
+
   },
   dropdown: {
     borderWidth: 1,
-    borderColor: Colors.LightWhite,
+    borderColor: '#DDDDDD',
     borderRadius: 10,
+    paddingLeft:10,
+    backgroundColor:'white',
 
     height: 60,
     width:'100%'

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,28 +12,30 @@ import {
   Text,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {Colors} from '../../Constants/Colors';
-import {Font} from '../../Constants/Font';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
 import Typography from '../../Component/UI/Typography';
 import Input from '../../Component/Input';
 import Button from '../../Component/Button';
-import {ImageConstant} from '../../Constants/ImageConstant';
-import {useNavigation, useRoute} from '@react-navigation/native';
-import {validateMobileNumber} from '../../Utils/Validation';
-import {customerSignup} from '../../Backend/CustomerAPI';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { validateMobileNumber } from '../../Utils/Validation';
+import { customerSignup } from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ImageModal from '../../Component/Modals/ImageModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const SignUp = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const userType = route?.params?.userType || 'customer';
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const number = route?.params?.phoneNumber || '';
+  const [phoneNumber, setPhoneNumber] = useState(number);
   const [profilePicture, setProfilePicture] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [nameError, setNameError] = useState('');
@@ -58,7 +60,7 @@ const SignUp = () => {
   };
 
   const handlePhoneChange = (value) => {
-    setPhoneNumber(value);
+    setPhoneNumber(number);
     if (phoneError) {
       setPhoneError('');
     }
@@ -128,8 +130,8 @@ const SignUp = () => {
     const formData = new FormData();
     formData.append('name', name.trim());
     formData.append('email', email.trim());
-    formData.append('number', validation.cleanMobile);
-    
+    formData.append('number', number.trim());
+
     // Add profile picture if selected
     if (profilePicture) {
       formData.append('profile_picture', {
@@ -170,202 +172,203 @@ const SignUp = () => {
   };
 
   return (
-    <SafeAreaView style={{flex:1,  backgroundColor:Colors.lightGreen}}>
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[Colors.white, Colors.lightGreen]}
-        start={{x: 0, y: 1}}
-        end={{x: 0, y: 0}}
-        style={styles.backgroundGradient}
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.lightGreen }}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[Colors.white, Colors.lightGreen]}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.backgroundGradient}
+        />
 
-      {/* Fixed Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={ImageConstant.BackArrow}
-            style={styles.backArrow}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-        <View style={styles.logoContainer}>
-          <Image
-            source={ImageConstant.zyara}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.placeholder} />
-      </View>
-
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : null}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled">
-          {/* Content */}
-          <View style={styles.content}>
-            <Typography
-              size={35}
-              type={Font.GeneralSans_Bold}
-              color="#00210B"
-              style={styles.title}>
-              Sign Up
-            </Typography>
-
-            <Typography
-              size={20}
-              type={Font.GeneralSans_Regular}
-              color="#383838"
-              style={styles.subtitle}>
-              Create your account{'\n'}to get started.
-            </Typography>
-
-            {/* Profile Picture Upload */}
-            <View style={styles.profilePictureContainer}>
-              <Typography
-                size={16}
-                type={Font.GeneralSans_Medium}
-                color={Colors.black}
-                style={styles.profilePictureTitle}>
-                Profile Picture
-              </Typography>
-              <TouchableOpacity
-                style={styles.profilePictureBox}
-                onPress={() => setShowImageModal(true)}
-                activeOpacity={0.7}>
-                {profilePicture ? (
-                  <Image
-                    source={{uri: profilePicture.path || profilePicture.uri}}
-                    style={styles.profileImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={styles.profilePlaceholder}>
-                    <Typography
-                      size={40}
-                      type={Font.GeneralSans_Regular}
-                      color={Colors.gray}>
-                      📷
-                    </Typography>
-                    <Typography
-                      size={12}
-                      type={Font.GeneralSans_Regular}
-                      color={Colors.gray}
-                      style={styles.profilePlaceholderText}>
-                      Tap to upload
-                    </Typography>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Full Name"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={handleNameChange}
-                keyboardType="default"
-                showTitle={true}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                error={nameError}
-                autoCapitalize="words"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={handleEmailChange}
-                keyboardType="email-address"
-                showTitle={true}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                error={emailError}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Input
-                title="Phone Number"
-                placeholder="Enter your phone number"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                keyboardType="phone-pad"
-                showTitle={true}
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                error={phoneError}
-                maxLength={10}
-              />
-            </View>
-
-            {/* Terms and Conditions */}
-            <View style={styles.termsContainer}>
-              <TouchableOpacity
-                style={styles.toggleContainer}
-                onPress={() => {
-                  setAgreeToTerms(!agreeToTerms);
-                  if (termsError) {
-                    setTermsError('');
-                  }
-                }}
-                activeOpacity={0.7}>
-                <View
-                  style={[
-                    styles.toggle,
-                    agreeToTerms && styles.toggleActive,
-                  ]}>
-                  {agreeToTerms ? (
-                    <View style={styles.toggleCircle} />
-                  ) : (
-                    <View style={styles.toggleCircleOff} />
-                  )}
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
-                activeOpacity={0.7}
-                style={styles.termsTextContainer}>
-                <Text style={styles.termsText}>
-                  <Text style={styles.termsTextRegular}>
-                    By sign-up, you agree to our{' '}
-                  </Text>
-                  <Text style={styles.termsLink}>
-                    Terms and Conditions
-                  </Text>
-                  <Text style={styles.termsTextRegular}>
-                    .
-                  </Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {termsError ? (
-              <Typography
-                size={12}
-                type={Font.GeneralSans_Regular}
-                color={Colors.red}
-                style={styles.errorText}>
-                {termsError}
-              </Typography>
-            ) : null}
-
-            <Button
-              title={loading ? "SENDING..." : "SEND OTP"}
-              onPress={handleSignUp}
-              style={styles.button}
-              linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
-              title_style={styles.buttonText}
-              disabled={loading}
+        {/* Fixed Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image
+              source={ImageConstant.BackArrow}
+              style={styles.backArrow}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+          <View style={styles.logoContainer}>
+            <Image
+              source={ImageConstant.zyara}
+              style={styles.logo}
+              resizeMode="contain"
             />
           </View>
-        </ScrollView>
-        {/* <TouchableOpacity
+          <View style={styles.placeholder} />
+        </View>
+
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : null}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled">
+            {/* Content */}
+            <View style={styles.content}>
+              <Typography
+                size={35}
+                type={Font.GeneralSans_Bold}
+                color="#00210B"
+                style={styles.title}>
+                Sign Up
+              </Typography>
+
+              <Typography
+                size={20}
+                type={Font.GeneralSans_Regular}
+                color="#383838"
+                style={styles.subtitle}>
+                Create your account{'\n'}to get started.
+              </Typography>
+
+              {/* Profile Picture Upload */}
+              <View style={styles.profilePictureContainer}>
+                <Typography
+                  size={16}
+                  type={Font.GeneralSans_Medium}
+                  color={Colors.black}
+                  style={styles.profilePictureTitle}>
+                  Profile Picture
+                </Typography>
+                <TouchableOpacity
+                  style={styles.profilePictureBox}
+                  onPress={() => setShowImageModal(true)}
+                  activeOpacity={0.7}>
+                  {profilePicture ? (
+                    <Image
+                      source={{ uri: profilePicture.path || profilePicture.uri }}
+                      style={styles.profileImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={styles.profilePlaceholder}>
+                      <Typography
+                        size={40}
+                        type={Font.GeneralSans_Regular}
+                        color={Colors.gray}>
+                        📷
+                      </Typography>
+                      <Typography
+                        size={12}
+                        type={Font.GeneralSans_Regular}
+                        color={Colors.gray}
+                        style={styles.profilePlaceholderText}>
+                        Tap to upload
+                      </Typography>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Full Name"
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={handleNameChange}
+                  keyboardType="default"
+                  showTitle={true}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  error={nameError}
+                  autoCapitalize="words"
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  keyboardType="email-address"
+                  showTitle={true}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  error={emailError}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Input
+                  title="Phone Number"
+                  placeholder="Enter your phone number"
+                  value={phoneNumber}
+                  editable={false}
+                  onChange={handlePhoneChange}
+                  keyboardType="phone-pad"
+                  showTitle={true}
+                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                  error={phoneError}
+                  maxLength={10}
+                />
+              </View>
+
+              {/* Terms and Conditions */}
+              <View style={styles.termsContainer}>
+                <TouchableOpacity
+                  style={styles.toggleContainer}
+                  onPress={() => {
+                    setAgreeToTerms(!agreeToTerms);
+                    if (termsError) {
+                      setTermsError('');
+                    }
+                  }}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.toggle,
+                      agreeToTerms && styles.toggleActive,
+                    ]}>
+                    {agreeToTerms ? (
+                      <View style={styles.toggleCircle} />
+                    ) : (
+                      <View style={styles.toggleCircleOff} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('CMSScreen', { slug: 'terms-conditions' })}
+                  activeOpacity={0.7}
+                  style={styles.termsTextContainer}>
+                  <Text style={styles.termsText}>
+                    <Text style={styles.termsTextRegular}>
+                      By sign-up, you agree to our{' '}
+                    </Text>
+                    <Text style={styles.termsLink}>
+                      Terms and Conditions
+                    </Text>
+                    <Text style={styles.termsTextRegular}>
+                      .
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              {termsError ? (
+                <Typography
+                  size={12}
+                  type={Font.GeneralSans_Regular}
+                  color={Colors.red}
+                  style={styles.errorText}>
+                  {termsError}
+                </Typography>
+              ) : null}
+
+              <Button
+                title={loading ? "SENDING..." : "SEND OTP"}
+                onPress={handleSignUp}
+                style={styles.button}
+                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
+                title_style={styles.buttonText}
+                disabled={loading}
+              />
+            </View>
+          </ScrollView>
+          {/* <TouchableOpacity
           style={styles.signinLink}
           onPress={() => navigation.goBack()}>
           <Typography
@@ -382,21 +385,21 @@ const SignUp = () => {
             </Typography>
           </Typography>
         </TouchableOpacity> */}
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
 
-      {/* Image Modal for Profile Picture */}
-      <ImageModal
-        showModal={showImageModal}
-        selected={(images) => {
-          if (images && images.length > 0) {
-            setProfilePicture(images[0]);
-          }
-          setShowImageModal(false);
-        }}
-        close={() => setShowImageModal(false)}
-        mediaType="photo"
-      />
-    </View>
+        {/* Image Modal for Profile Picture */}
+        <ImageModal
+          showModal={showImageModal}
+          selected={(images) => {
+            if (images && images.length > 0) {
+              setProfilePicture(images[0]);
+            }
+            setShowImageModal(false);
+          }}
+          close={() => setShowImageModal(false)}
+          mediaType="photo"
+        />
+      </View>
     </SafeAreaView>);
 };
 
@@ -419,14 +422,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    
+
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 22,
-    paddingTop:10,
+    paddingTop: 10,
     paddingBottom: 20,
     zIndex: 10,
   },

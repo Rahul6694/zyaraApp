@@ -1,15 +1,14 @@
-import { StyleSheet, Text as RNText, View, useWindowDimensions, PixelRatio } from 'react-native'
-import React from 'react'
-// import { Font } from '../../Constants/Font'
-import { Colors } from '../../Constants/Colors'
-import { Font } from '../../Constants/Font'
+import { StyleSheet, Text as RNText, PixelRatio } from 'react-native';
+import React from 'react';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
 
 const Typography = ({
     size = 14,
     children,
-    type = Font?.Poppins_Regular,
-    color = Colors?.black,
-    textAlign = undefined,
+    type = Font.GeneralSans_Regular,   // Default General Sans
+    color = Colors.black,
+    textAlign,
     style = {},
     numberOfLines,
     lineHeight,
@@ -17,7 +16,8 @@ const Typography = ({
     letterSpacing,
     ...props
 }) => {
-    const fontScale = PixelRatio?.getFontScale();
+
+    const fontScale = PixelRatio.getFontScale();
 
     return (
         <RNText
@@ -25,31 +25,27 @@ const Typography = ({
             style={[
                 styles.font,
                 {
-                    fontSize: size/fontScale-1,
+                    fontSize: size / fontScale,   // Better scaling
                     color: color,
                     textAlign,
-                    // fontWeight: fontWeight,
                     lineHeight: lineHeight,
                     fontFamily: type,
-                    letterSpacing: letterSpacing
+                    letterSpacing: letterSpacing,
                 },
                 style,
             ]}
-            {...props}>
+            {...props}
+        >
             {children}
         </RNText>
+    );
+};
 
-    )
-}
-
-export default Typography
+export default Typography;
 
 const styles = StyleSheet.create({
     font: {
-        // fontFamily: fonts[type] || undefined,
         textAlignVertical: 'center',
         includeFontPadding: false,
-        // marginVertical: -10,
-        // backgroundColor: 'red'
     },
 });

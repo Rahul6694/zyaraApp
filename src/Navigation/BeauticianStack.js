@@ -10,6 +10,7 @@ import KYCVerificationStep1 from '../Screens/BeauticianScreen/KYCVerificationSte
 import KYCVerificationStep2 from '../Screens/BeauticianScreen/KYCVerificationStep2';
 import BankVerification from '../Screens/BeauticianScreen/BankVerification';
 import BeauticianSettingProfile from '../Screens/BeauticianScreen/BeauticianSettingProfile';
+import BeauticianManageAdresss from '../Screens/BeauticianScreen/BeauticianManageAdresss';
 import CMSScreen from '../Screens/CMSScreen';
 import createBottomTabNavigator from '../Navigation/BeauticianBottomTabs';
 
@@ -88,6 +89,11 @@ const BeauticianStack = () => {
       <Stack.Screen 
         name="BeauticianSettingProfile" 
         component={BeauticianSettingProfile}
+      
+      />
+      <Stack.Screen 
+        name="BeauticianManageAdresss" 
+        component={BeauticianManageAdresss}
       
       />
       

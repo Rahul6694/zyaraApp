@@ -31,6 +31,7 @@ const KYCVerificationStep1 = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const token = route?.params?.token;
+
   const beauticianId = route?.params?.beauticianId;
   const [profileImage, setProfileImage] = useState(null);
   const [coverBanner, setCoverBanner] = useState(null);
@@ -114,6 +115,7 @@ const KYCVerificationStep1 = () => {
         
         // Navigate to Step 2 (ProfileSetup)
         navigation.navigate('ProfileSetup', {
+            number:response.data.number,
           token: token,
           beauticianId: beauticianId || response?.beautician_id || response?.data?.beautician_id,
         });
@@ -141,7 +143,6 @@ const KYCVerificationStep1 = () => {
 
       {/* Fixed Header */}
       <ScreenHeader title="Profile Setup" />
-
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : null}>

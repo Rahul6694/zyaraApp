@@ -46,4 +46,6 @@ export const ImageConstant = {
   No : require('../../assets/Images/No.png'),
   homePay : require('../../assets/Images/homePay.png'),
     email : require('../../assets/Images/email.png'),
+     usercalander: require('../../assets/Images/usercalander.png'),
+     calander3: require('../../assets/Images/calander3.png'),
 };

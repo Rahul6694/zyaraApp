@@ -1,7 +1,4 @@
 export const Font = {
-
-  
-  // General Sans Fonts
   GeneralSans_Regular: 'GeneralSans-Regular',
   GeneralSans_Bold: 'GeneralSans-Bold',
   GeneralSans_Medium: 'GeneralSans-Medium',

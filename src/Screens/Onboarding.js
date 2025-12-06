@@ -84,7 +84,7 @@ const Onboarding = ({navigation}) => {
         <View style={styles.bottomSection}>
           <Typography
             size={height < 700 ? 14 : 16}
-            type={Font.GeneralSans_Medium}
+            type={Font.GeneralSans_Bold}
             color={Colors.black}
             style={styles.userTypeTitle}>
             Choose your user type
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     marginTop: height * 0.02,
     marginBottom: height * 0.015,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   buttonRow: {
     flexDirection: 'row',

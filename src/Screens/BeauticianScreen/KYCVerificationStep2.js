@@ -31,6 +31,7 @@ const KYCVerificationStep2 = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const token = route?.params?.token;
+
   const beauticianId = route?.params?.beauticianId;
   const [idProof, setIdProof] = useState(null);
   const [idFront, setIdFront] = useState(null);

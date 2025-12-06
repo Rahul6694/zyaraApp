@@ -33,6 +33,8 @@ const ProfileSetup = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const token = route?.params?.token;
+  const number = route?.params?.number;
+
   const beauticianId = route?.params?.beauticianId;
   const [formData, setFormData] = useState({
     fullName: '',
@@ -46,6 +48,11 @@ const ProfileSetup = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+  if (number) {
+    setFormData(prev => ({ ...prev, phoneNumber: '+91 ' + number }));
+  }
+}, [number]);
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -174,6 +181,7 @@ const ProfileSetup = () => {
         // Navigate to Step 3 (KYCVerificationStep2)
         navigation.navigate('KYCVerificationStep2', {
           token: token,
+        
           beauticianId: beauticianId || response?.beautician_id || response?.data?.beautician_id,
         });
       },
@@ -268,8 +276,9 @@ const ProfileSetup = () => {
                     style={styles.phoneInput}
                     placeholder="enter mobile number"
                     placeholderTextColor="#8C8C8C"
-                    value={formData.phoneNumber.replace('+91', '').trim()}
-                    onChangeText={value => handleInputChange('phoneNumber', '+91 ' + value)}
+                   value={number}     // route se aa raha number show hoga
+  editable={false}  
+                    
                     keyboardType="phone-pad"
                   />
                 </View>

@@ -8,6 +8,8 @@ import OTPVerify from '../Screens/CustomerScreen/OTPVerify';
 import CMSScreen from '../Screens/CMSScreen';
 import  CustomBottomTabs from './CustomBottomTabs';
 import SettingProfile from '../Screens/CustomerScreen/SettingProfile';
+import HelpSupport from '../Screens/CustomerScreen/HelpSupport';
+import ManageAdresss from '../Screens/CustomerScreen/ManageAdresss';
 
 const Stack = createStackNavigator();
 
@@ -66,6 +68,18 @@ const CustomerStack = () => {
         <Stack.Screen 
         name="SettingProfile" 
         component={SettingProfile}
+    
+      />
+
+       <Stack.Screen 
+        name="HelpSupport" 
+        component={HelpSupport}
+    
+      />
+
+       <Stack.Screen 
+        name="ManageAdresss" 
+        component={ManageAdresss}
     
       />
       

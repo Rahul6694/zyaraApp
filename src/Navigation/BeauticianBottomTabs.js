@@ -9,25 +9,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 function DummyScreen() {
   return <View style={{ flex: 1, backgroundColor: "#fff" }} />;
 }
-
 const Tab = createBottomTabNavigator();
-
-
 function CustomTabBar({ state, navigation }) {
   return (
     <View style={styles.tabContainer}>
       {state.routes.map((route, index) => {
         const isFocused = state.index === index;
-
         const onPress = () => navigation.navigate(route.name);
-
         let iconSource = ImageConstant.buket;
-
         if (route.name === 'Home') iconSource = ImageConstant.home2;
         if (route.name === 'My Booking') iconSource = ImageConstant.Calander;
+            if (route.name === 'Earning') iconSource = ImageConstant.pay;
         if (route.name === 'Chat') iconSource = ImageConstant.chat;
         if (route.name === 'Account') iconSource = ImageConstant.account;
-
         return (
           <TouchableOpacity
             key={index}
@@ -43,7 +37,7 @@ function CustomTabBar({ state, navigation }) {
               source={iconSource}
               style={[
                 styles.icon,
-                isFocused? {tintColor:'0DA678'}: null
+                isFocused? {tintColor:'#0DA678'}: null
                
               ]}
               resizeMode="contain"
@@ -77,6 +71,7 @@ export default function BeauticianBottomTabs() {
       >
         <Tab.Screen name="Home" component={BeauticianHome} />
         <Tab.Screen name="My Booking" component={DummyScreen} />
+         <Tab.Screen name="Earning" component={DummyScreen} />
         <Tab.Screen name="Chat" component={DummyScreen} />
         <Tab.Screen name="Account" component={MyProfileScreenBeauty} />
       </Tab.Navigator>
