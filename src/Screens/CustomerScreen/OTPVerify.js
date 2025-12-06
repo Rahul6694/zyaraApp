@@ -220,8 +220,8 @@ const OTPVerify = () => {
     }
   };
 
-  const handleChangeNumber = () => {
-    navigation.goBack();
+  const handleChangeNumber = () => { 
+    navigation.navigate('SignIn');
   };
 
   return (

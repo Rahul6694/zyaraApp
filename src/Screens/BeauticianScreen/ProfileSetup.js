@@ -205,7 +205,7 @@ const ProfileSetup = () => {
           style={styles.backgroundGradient}
         />
         {/* Fixed Header */}
-        <ScreenHeader title="Profile Setup" showGreenLine={true} />
+        <ScreenHeader  title="Profile Setup" showGreenLine={true} />
         <KeyboardAvoidingView
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : null}>

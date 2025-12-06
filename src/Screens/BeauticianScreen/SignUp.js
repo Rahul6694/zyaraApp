@@ -112,7 +112,7 @@ const SignIn = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
+      <ScreenHeader  onBackPress={()=>navigation.navigate('Onboarding')} style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}

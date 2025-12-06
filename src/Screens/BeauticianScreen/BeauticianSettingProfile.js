@@ -26,10 +26,10 @@ const { width } = Dimensions.get('window');
 const BeauticianSettingProfile = () => {
     const navigation = useNavigation();
 
-    const [name, setName] = useState('rohtash');
-    const [brandName, setBrandName] = useState('Rohtash Salon'); // FIXED
-    const [email, setEmail] = useState('rohtashverma2580@gmail.com');
-    const [phoneNumber, setPhoneNumber] = useState('6283721954');
+    const [name, setName] = useState('');
+    const [brandName, setBrandName] = useState(''); // FIXED
+    const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
     const [showImageModal, setShowImageModal] = useState(false);
     const [loading, setLoading] = useState(false);

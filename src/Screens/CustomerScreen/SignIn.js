@@ -126,7 +126,8 @@ const SignIn = () => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled">
             {/* Header */}
-            <ScreenHeader showLogo={true} style={{ paddingTop: 10 }} showGreenLine={false} />
+ 
+            <ScreenHeader   onBackPress={()=>navigation.navigate('Onboarding')} showLogo={true} style={{ paddingTop: 10 }} showGreenLine={false} />
 
             {/* Content */}
             <View style={styles.content}>
@@ -135,7 +136,7 @@ const SignIn = () => {
                 type={Font.GeneralSans_Bold}
                 color="#00210B"
                 style={styles.title}>
-                Sign In
+                Get started
               </Typography>
 
               <Typography
@@ -143,7 +144,7 @@ const SignIn = () => {
                 type={Font.GeneralSans_Regular}
                 color="#383838"
                 style={styles.subtitle}>
-                Welcome back!{'\n'}Please sign in to continue.
+               Enter your Phone number to correct..
               </Typography>
 
               <View style={styles.inputContainer}>
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   subtitle: {
     marginBottom: 30,

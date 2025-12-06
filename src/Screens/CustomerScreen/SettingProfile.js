@@ -25,9 +25,9 @@ const { width } = Dimensions.get('window');
 const SignUp = () => {
     const navigation = useNavigation();
 
-    const [name, setName] = useState('rohtash');
-    const [email, setEmail] = useState('rohtashverma2580@gmail.com');
-    const [phoneNumber, setPhoneNumber] = useState('6283721954');
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
     const [showImageModal, setShowImageModal] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -98,8 +98,8 @@ const SignUp = () => {
                                 </TouchableOpacity>
 
 
-                                <Typography style={styles.nameLabel} size={24} type={Font.GeneralSans_Bold}>{name}</Typography>
-                                <Typography style={styles.emailLabel} size={18}>{email}</Typography>
+                                <Typography style={styles.nameLabel} size={24} type={Font.GeneralSans_Bold}>user</Typography>
+                                <Typography style={styles.emailLabel} size={18}>example@gmail.com</Typography>
                             </View>
 
                             {/* Input Fields */}

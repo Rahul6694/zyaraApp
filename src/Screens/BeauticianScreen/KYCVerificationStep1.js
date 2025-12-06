@@ -142,7 +142,7 @@ const KYCVerificationStep1 = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader title="Profile Setup" />
+      <ScreenHeader  onBackPress={()=>navigation.navigate('Onboarding')} title="Profile Setup" />
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : null}>

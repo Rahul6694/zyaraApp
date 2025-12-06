@@ -183,7 +183,7 @@ const SignUp = () => {
 
         {/* Fixed Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity  onPress={()=>navigation.navigate('Onboarding')}>
             <Image
               source={ImageConstant.BackArrow}
               style={styles.backArrow}

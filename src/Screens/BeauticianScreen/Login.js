@@ -109,7 +109,7 @@ const Login = () => {
       />
 
       {/* Fixed Header */}
-      <ScreenHeader style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
+      <ScreenHeader  onBackPress={()=>navigation.navigate('Onboarding')} style={{paddingTop:10}} showLogo={true} showGreenLine={false} />
 
       <KeyboardAvoidingView
         style={styles.keyboardView}
@@ -125,7 +125,7 @@ const Login = () => {
               type={Font.GeneralSans_Bold}
               color="#00210B"
               style={styles.title}>
-              Login
+            Get started
             </Typography>
 
             <Typography
@@ -133,7 +133,7 @@ const Login = () => {
               type={Font.GeneralSans_Regular}
               color="#383838"
               style={styles.subtitle}>
-              Welcome back!{'\n'}Please login to continue.
+              Enter your Phone number to correct..
             </Typography>
 
             <View style={styles.inputContainer}>
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    marginBottom: 15,
+    marginBottom: 10,
   },
   subtitle: {
     marginBottom: 30,
