@@ -22,10 +22,22 @@ export const USER_SEND_OTP = 'users/send-otp';
 export const USER_VERIFY_OTP = 'users/verify-otp';
 export const USER_LOGOUT = 'users/logout';
 export const USER_DELETE_ACCOUNT = 'users/delete-account';
+export const USER_PROFILE = 'users/profile';
 
 // Beautician Logout
 export const BEAUTICIAN_LOGOUT = 'Beautician/logout';
 
 // Beautician Delete Account
 export const BEAUTICIAN_DELETE_ACCOUNT = 'beauticians/delete-account';
-  
+
+// Beautician Profile APIs
+export const BEAUTICIAN_PROFILE = 'beauticians/profile';
+
+// Beautician Address APIs
+export const BEAUTICIAN_ADDRESSES = 'beauticians/addresses';
+
+// Location APIs
+export const LOCATIONS_STATES = 'locations/states';
+
+export const CATEGORIES = 'categories';
+export const SUBCATEGORIES = 'sub-categories';

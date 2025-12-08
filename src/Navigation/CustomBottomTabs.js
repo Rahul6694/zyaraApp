@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ImageConstant } from '../Constants/ImageConstant';
 import HomeScreen from '../Screens/CustomerScreen/Home';
 import MyProfileScreen from '../Screens/CustomerScreen/MyProfileScreen'
+import Categories from '../Screens/CustomerScreen/Categories'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function DummyScreen() {
@@ -70,7 +71,7 @@ function CustomTabBar({ state, navigation }) {
 export default function BottomTabs() {
   const insets = useSafeAreaInsets();
   return (
-   <View style={{flex:1, paddingBottom:insets.bottom}}>
+   <View style={{flex:1, paddingBottom:insets.bottom, backgroundColor:'white'}}>
 
 
       <Tab.Navigator
@@ -78,7 +79,7 @@ export default function BottomTabs() {
         tabBar={(props) => <CustomTabBar {...props} />}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Categories" component={DummyScreen} />
+        <Tab.Screen name="Categories" component={Categories} />
         <Tab.Screen name="My Booking" component={DummyScreen} />
         <Tab.Screen name="Account" component={MyProfileScreen} />
       </Tab.Navigator>

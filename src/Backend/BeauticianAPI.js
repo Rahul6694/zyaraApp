@@ -4,6 +4,10 @@ import {
   POST_WITH_TOKEN,
   POST_FORM_DATA_WITH_TOKEN,
   DELETE_WITH_TOKEN,
+  GET_WITH_TOKEN,
+  PUT_FORM_DATA,
+  PUT_WITH_TOKEN,
+  GET,
 } from './Backend';
 import {
   BEAUTICIAN_SIGNUP,
@@ -17,6 +21,10 @@ import {
   BEAUTICIAN_SIGNUP_STEP4,
   BEAUTICIAN_LOGOUT,
   BEAUTICIAN_DELETE_ACCOUNT,
+  BEAUTICIAN_PROFILE,
+  BEAUTICIAN_ADDRESSES,
+  LOCATIONS_STATES,
+  LOCATIONS_CITIES,
 } from './api_routes';
 
 /**
@@ -225,6 +233,142 @@ export const beauticianDeleteAccount = (onSuccess, onError) => {
     {},
     onSuccess,
     onError,
+  );
+};
+
+/**
+ * Get Beautician Profile
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getBeauticianProfile = (onSuccess, onError) => {
+  GET_WITH_TOKEN(
+    BEAUTICIAN_PROFILE,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Update Beautician Profile
+ * @param {FormData} formData - Form data containing:
+ *   - profile_picture (file, optional)
+ *   - name (string, optional)
+ *   - email (string, optional)
+ *   - number (string, optional)
+ *   - business_name (string, optional)
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const updateBeauticianProfile = (formData, onSuccess, onError) => {
+  PUT_FORM_DATA(
+    BEAUTICIAN_PROFILE,
+    formData,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Get Beautician Addresses
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getBeauticianAddresses = (onSuccess, onError) => {
+  GET_WITH_TOKEN(
+    BEAUTICIAN_ADDRESSES,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Get Beautician Address by ID
+ * @param {number} addressId - Address ID
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getBeauticianAddress = (addressId, onSuccess, onError) => {
+  GET_WITH_TOKEN(
+    `${BEAUTICIAN_ADDRESSES}/${addressId}`,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Create Beautician Address
+ * @param {Object} data - { state: string, city: string, address: string, is_default: boolean }
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const createBeauticianAddress = (data, onSuccess, onError) => {
+  POST_WITH_TOKEN(
+    BEAUTICIAN_ADDRESSES,
+    data,
+    null, // Token will be fetched from store automatically
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Update Beautician Address
+ * @param {number} addressId - Address ID
+ * @param {Object} data - { state: string, city: string, address: string, is_default: boolean }
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const updateBeauticianAddress = (addressId, data, onSuccess, onError) => {
+  PUT_WITH_TOKEN(
+    `${BEAUTICIAN_ADDRESSES}/${addressId}`,
+    data,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Delete Beautician Address
+ * @param {number} addressId - Address ID
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const deleteBeauticianAddress = (addressId, onSuccess, onError) => {
+  DELETE_WITH_TOKEN(
+    `${BEAUTICIAN_ADDRESSES}/${addressId}`,
+    {},
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Get States
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getStates = (onSuccess, onError) => {
+  GET(
+    LOCATIONS_STATES,
+    onSuccess,
+    onError,
+    {},
+  );
+};
+
+/**
+ * Get Cities by State ID
+ * @param {number} stateId - State ID
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getCitiesByState = (stateId, onSuccess, onError) => {
+  GET(
+    `${LOCATIONS_STATES}/${stateId}/cities`,
+    onSuccess,
+    onError,
+    {},
   );
 };
 

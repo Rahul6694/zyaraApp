@@ -3,6 +3,8 @@ import {
   POST_JSON,
   POST_WITH_TOKEN,
   DELETE_WITH_TOKEN,
+  GET_WITH_TOKEN,
+  PUT_FORM_DATA,
 } from './Backend';
 import {
   USER_SIGNUP,
@@ -12,6 +14,7 @@ import {
   USER_VERIFY_OTP,
   USER_LOGOUT,
   USER_DELETE_ACCOUNT,
+  USER_PROFILE,
 } from './api_routes';
 
 /**
@@ -117,6 +120,38 @@ export const customerDeleteAccount = (onSuccess, onError) => {
   DELETE_WITH_TOKEN(
     USER_DELETE_ACCOUNT,
     {},
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Get User Profile
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const getUserProfile = (onSuccess, onError) => {
+  GET_WITH_TOKEN(
+    USER_PROFILE,
+    onSuccess,
+    onError,
+  );
+};
+
+/**
+ * Update User Profile
+ * @param {FormData} formData - Form data containing:
+ *   - profile_picture (file, optional)
+ *   - name (string, optional)
+ *   - email (string, optional)
+ *   - number (string, optional)
+ * @param {Function} onSuccess - Success callback
+ * @param {Function} onError - Error callback
+ */
+export const updateUserProfile = (formData, onSuccess, onError) => {
+  PUT_FORM_DATA(
+    USER_PROFILE,
+    formData,
     onSuccess,
     onError,
   );

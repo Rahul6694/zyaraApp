@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   arrowIcon: {
     height: 10,
-    width: 11,
+    width: 10,
     resizeMode: 'contain',
     tintColor: '#00B272',
   },

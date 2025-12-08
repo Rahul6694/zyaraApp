@@ -1,4 +1,5 @@
 export const Font = {
+  // GeneralSans Fonts
   GeneralSans_Regular: 'GeneralSans-Regular',
   GeneralSans_Bold: 'GeneralSans-Bold',
   GeneralSans_Medium: 'GeneralSans-Medium',
@@ -13,4 +14,17 @@ export const Font = {
   GeneralSans_ExtralightItalic: 'GeneralSans-ExtralightItalic',
   GeneralSans_Variable: 'GeneralSans-Variable',
   GeneralSans_VariableItalic: 'GeneralSans-VariableItalic',
+  
+  // Poppins Fonts (mapped to GeneralSans equivalents)
+  Poppins_Regular: 'GeneralSans-Regular',
+  Poppins_Medium: 'GeneralSans-Medium',
+  Poppins_Bold: 'GeneralSans-Bold',
+  Poppins_Semibold: 'GeneralSans-Semibold',
+  Poppins_Light: 'GeneralSans-Light',
+  
+  // Manrope Fonts (mapped to GeneralSans equivalents)
+  Manrope_SemiBold: 'GeneralSans-Semibold',
+  Manrope_Regular: 'GeneralSans-Regular',
+  Manrope_Medium: 'GeneralSans-Medium',
+  Manrope_Bold: 'GeneralSans-Bold',
 };

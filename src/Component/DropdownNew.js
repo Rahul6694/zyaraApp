@@ -84,15 +84,13 @@ const DropdownNew = ({
         ]}>
         {title && (
           <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: 10,
-            }}>
+            style={[styles.titleContainer, {
+              marginBottom: 5,
+            }]}>
             {source && (
               <Image source={source} style={[styles.img_style, style_img]} />
             )}
-            <Typography type={Font?.GeneralSans_Medium} size={15} color='#252D38' style={[styles.txt_style, style_title]}>
+            <Typography type={Font?.GeneralSans_Regular} size={15} color='#282727' style={[styles.txt_style, style_title]}>
               {title}
             </Typography>
           </View>
@@ -126,10 +124,11 @@ const DropdownNew = ({
                 }}>
                 <Image
                   tintColor={iconColor}
-                  source={ImageConstant.arrow_down}
+                  source={ImageConstant.nextarrow}
                   style={{
-                    height: 20,
-                    width: 20,
+                    height: 10,
+                    width: 10,
+                    tintColor:'#9291A5',
                     resizeMode: 'contain',
                     transform: [{rotate: '90deg'}],
                   }}
@@ -188,16 +187,22 @@ const DropdownNew = ({
 export default DropdownNew;
 
 const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   img_style: {
-    height: 16,
-    width: 16,
+    height: 20,
+    width: 20,
     marginLeft: 10,
+    marginRight: 5,
+    resizeMode: 'contain',
   },
   txt_style: {
     color: '#282727',
-    fontize: 15,
-    fontFamily: Font.GeneralSans_Medium,
-
+    fontize: 14,
+    fontFamily: Font.GeneralSans_Regular,
   },
   dropdown: {
     borderWidth: 1,

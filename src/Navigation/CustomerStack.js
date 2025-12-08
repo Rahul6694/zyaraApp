@@ -10,6 +10,16 @@ import  CustomBottomTabs from './CustomBottomTabs';
 import SettingProfile from '../Screens/CustomerScreen/SettingProfile';
 import HelpSupport from '../Screens/CustomerScreen/HelpSupport';
 import ManageAdresss from '../Screens/CustomerScreen/ManageAdresss';
+import SubCategories from '../Screens/CustomerScreen/SubCategories';
+import ChooseBeauticians from '../Screens/CustomerScreen/ChooseBeauticians';
+import ServiceDetails from '../Screens/CustomerScreen/ServiceDetails';
+import SelectLocation from '../Screens/CustomerScreen/SelectLocation';
+import AddNewAddress from '../Screens/CustomerScreen/AddNewAddress';
+import AddToCart from '../Screens/CustomerScreen/AddToCart';
+import SlotBooking from '../Screens/CustomerScreen/SlotBooking';
+import BookingRequest from '../Screens/CustomerScreen/BookingRequest';
+import Congratulations from '../Screens/CustomerScreen/Congratulations';
+import SettingsScreen from '../Screens/CustomerScreen/SettingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -81,6 +91,65 @@ const CustomerStack = () => {
         name="ManageAdresss" 
         component={ManageAdresss}
     
+      />
+
+       <Stack.Screen 
+        name="SubCategories" 
+        component={SubCategories}
+    
+      />
+
+       <Stack.Screen 
+        name="ChooseBeauticians" 
+        component={ChooseBeauticians}
+    
+      />
+
+       <Stack.Screen 
+        name="ServiceDetails" 
+        component={ServiceDetails}
+    
+      />
+
+       <Stack.Screen 
+        name="SelectLocation" 
+        component={SelectLocation}
+    
+      />
+
+       <Stack.Screen 
+        name="AddNewAddress" 
+        component={AddNewAddress}
+    
+      />
+
+       <Stack.Screen 
+        name="AddToCart" 
+        component={AddToCart}
+    
+      />
+
+       <Stack.Screen 
+        name="SlotBooking" 
+        component={SlotBooking}
+    
+      />
+
+       <Stack.Screen 
+        name="BookingRequest" 
+        component={BookingRequest}
+    
+      />
+
+       <Stack.Screen 
+        name="Congratulations" 
+        component={Congratulations}
+    
+      />
+
+       <Stack.Screen 
+        name="SettingsScreen" 
+        component={SettingsScreen}
       />
       
     </Stack.Navigator>

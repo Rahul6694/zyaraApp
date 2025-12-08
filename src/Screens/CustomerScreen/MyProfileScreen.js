@@ -144,7 +144,7 @@ const MyProfileScreen = ({ navigation }) => {
           <MenuItem title="My Profile" icon={ImageConstant.user} subtitle="View or change profile details"  onpress={()=>navigation.navigate('SettingProfile')}/>
           <MenuItem title="Manage Address" icon={ImageConstant.location2} subtitle="Share, Edit & Add Address"  onpress={()=>navigation.navigate('ManageAdresss')}/>
           <MenuItem title="Help & Support" icon={ImageConstant.help} subtitle="FAQs and links"  onpress={() => navigation.navigate('CMSScreen', { slug: 'help-support-general' })} />
-          <MenuItem title="Settings" icon={ImageConstant.setting} subtitle="Manage your account setting" />
+          <MenuItem title="Settings" icon={ImageConstant.setting} subtitle="Manage your account setting" onpress={() => navigation.navigate('SettingsScreen')} />
         </View>
 
         {/* LOGOUT BUTTON */}

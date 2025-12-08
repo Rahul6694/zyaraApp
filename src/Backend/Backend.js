@@ -25,6 +25,7 @@ const errorHandling = {
 };
 
 export const API = BASE_URL;
+console.log('API Base URL:', API);
 // Get token lazily to avoid errors if store is not initialized
 export const getToken = () => {
   try {
@@ -197,12 +198,16 @@ export const GET = async (
   },
 ) => {
   try {
+    console.log('GET Request URL:', `${API}${route}`);
     axios({
       method: 'get',
       url: `${API}${route}`,
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...headers,
       },
+      timeout: 30000, // 30 seconds timeout
       ...errorHandling,
     })
       .then(res => {
@@ -220,9 +225,12 @@ export const GET = async (
         }
       })
       .catch(err => {
+        console.log('GET Request Error:', err.message);
+        console.log('Full Error:', err);
         onError(err);
       });
   } catch (error) {
+    console.log('GET Request Exception:', error);
     onFail({data: null, msg: 'Network Error', status: 'error'});
     return {data: null, msg: 'Network Error', status: 'error'};
   }

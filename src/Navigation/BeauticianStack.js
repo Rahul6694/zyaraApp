@@ -12,6 +12,7 @@ import BankVerification from '../Screens/BeauticianScreen/BankVerification';
 import BeauticianSettingProfile from '../Screens/BeauticianScreen/BeauticianSettingProfile';
 import BeauticianManageAdresss from '../Screens/BeauticianScreen/BeauticianManageAdresss';
 import CMSScreen from '../Screens/CMSScreen';
+import BeauticianSettingsScreen from '../Screens/BeauticianScreen/BeauticianSettingsScreen';
 import createBottomTabNavigator from '../Navigation/BeauticianBottomTabs';
 
 const Stack = createStackNavigator();
@@ -95,6 +96,10 @@ const BeauticianStack = () => {
         name="BeauticianManageAdresss" 
         component={BeauticianManageAdresss}
       
+      />
+      <Stack.Screen 
+        name="BeauticianSettingsScreen" 
+        component={BeauticianSettingsScreen}
       />
       
     </Stack.Navigator>

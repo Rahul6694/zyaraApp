@@ -563,7 +563,6 @@ const styles = StyleSheet.create({
     fontFamily: Font.GeneralSans_Regular,
     color: Colors.black,
     letterSpacing: 0.02,
-    lineHeight: 24,
     flexWrap: 'wrap',
   },
   termsTextRegular: {

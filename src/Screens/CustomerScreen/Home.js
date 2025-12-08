@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,32 +17,14 @@ import Typography from '../../Component/UI/Typography';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { logOut } from '../../Redux/action';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import Input from '../../Component/Input';
+import { CATEGORIES, SUBCATEGORIES } from '../../Backend/api_routes';
+import { GET } from '../../Backend/Backend';
 
 const { width, height } = Dimensions.get('window');
 
 // Static Data
-const categoriesData = [
-  {
-    id: 1,
-    title: `Hair ${'\n'} Services`,
-    image: ImageConstant.user1,
-  },
-  {
-    id: 2,
-    title: 'Skin Care & Facial',
-    image: ImageConstant.user2,
-  },
-  {
-    id: 3,
-    title: 'Nail Care Services',
-    image: ImageConstant.user5,
-  },
-  {
-    id: 4,
-    title: 'Skin Care & Facial',
-    image: ImageConstant.user4,
-  },
-];
+
 
 const recommendedServices = [
   {
@@ -109,32 +91,71 @@ const nearbyBeauticians = [
   },
 ];
 
-const Home = () => {
+const Home = ({navigation}) => {
 
   const [cartItems, setCartItems] = useState(0);
   const insets = useSafeAreaInsets();
 
+
+
+
+    const [categoryList, setCategoryList] = useState([]);
+
+    useEffect(() => {
+        getData();
+    }, []);
+    const getData = () => {
+        GET(
+            CATEGORIES,
+            res => {
+                setCategoryList(res?.data);
+            },
+            err => {
+                console.log('Get Error:', err);
+            }
+        );
+    };
+
+
+
+
   const renderCategoryItem = ({ item }) => (
     <LinearGradient
-  colors={["#FFFFFF", "#FFF8F8"]}
-  start={{ x: 0, y: 0 }}
-  end={{ x: 0, y: 1 }}
-  style={{
-    paddingBottom:10
-  }}
->
-
-
-    <TouchableOpacity style={styles.categoryCard}>
-      <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
-      <Typography
-        size={16}
-        type={Font.GeneralSans_Medium}
-        color="#090909"
-        style={styles.categoryTitle}>
-        {item.title}
-      </Typography>
-    </TouchableOpacity>
+      colors={["#FFFFFF", "#FFF8F8"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{
+        paddingBottom: 10
+      }}
+    >
+      <TouchableOpacity 
+        style={styles.categoryCard}
+        onPress={() => navigation.navigate('SubCategories', {
+          categoryId: item.id,
+          categoryName: item.name,
+          id: item.id,
+          name: item.name,
+        })}>
+       <Image 
+         source={{ uri: item.image }}  
+         style={styles.categoryImage} 
+         resizeMode="cover"
+         onError={(error) => {
+           console.log('Category image error:', error.nativeEvent?.error || error);
+           console.log('Failed URL:', item.image);
+         }}
+         onLoad={() => {
+           console.log('Category image loaded:', item.image);
+         }}
+       />
+        <Typography
+          size={16}
+          type={Font.GeneralSans_Medium}
+          color="#090909"
+          style={styles.categoryTitle}>
+          {item.name}
+        </Typography>
+      </TouchableOpacity>
     </LinearGradient>
   );
 
@@ -171,7 +192,7 @@ const Home = () => {
             color={Colors.black}>
             {item.price}
           </Typography>
-          <TouchableOpacity style={styles.addToCartButton} onPress={()=>setCartItems(cartItems+1)}>
+          <TouchableOpacity style={styles.addToCartButton} onPress={() => setCartItems(cartItems + 1)}>
             <Typography
               size={16}
               type={Font.GeneralSans_Medium}
@@ -239,11 +260,11 @@ const Home = () => {
 
   return (
 
-    <View style={[styles.container, {paddingTop:insets.top}]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
 
       {/* Top Gradient */}
       <LinearGradient
-        colors={[ Colors.lightGreen,Colors.white]}
+        colors={[Colors.lightGreen, Colors.white]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.topGradient}
@@ -274,8 +295,6 @@ const Home = () => {
 
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-
-
                 <Image
                   source={ImageConstant.Location}
                   style={styles.locationIcon}
@@ -328,20 +347,20 @@ const Home = () => {
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Image
+
+          <View style={{ flex: 1 }}>
+            <Input
+                 mainStyle={{  marginVertical: 0,}}
               source={ImageConstant.search}
-              style={styles.searchIcon}
-              resizeMode="contain"
+              showImage={true}
+              placeholder="search"
+            style_inputContainer={{height:60}}
+              keyboardType="default"
+              showTitle={true}
+              placeholderTextColor="rgba(0,0,0,0.5)"
             />
-            <Typography
-              size={16}
-              type={Font.GeneralSans_Regular}
-              color="#656565"
-              style={styles.searchPlaceholder}>
-              search
-            </Typography>
           </View>
+
           <TouchableOpacity style={styles.filterButton}>
             <Image
               source={ImageConstant.filter}
@@ -349,7 +368,9 @@ const Home = () => {
               resizeMode="contain"
             />
           </TouchableOpacity>
+
         </View>
+
 
         {/* Promotional Banner */}
         <View style={styles.bannerContainer}>
@@ -406,7 +427,7 @@ const Home = () => {
               style={styles.sectionTitle}>
               Our Categories
             </Typography>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={()=>navigation.navigate('Categories')}>
               <Typography
                 size={16}
                 type={Font.GeneralSans_Medium}
@@ -416,7 +437,7 @@ const Home = () => {
             </TouchableOpacity>
           </View>
           <FlatList
-            data={categoriesData}
+            data={categoryList}
             renderItem={renderCategoryItem}
             keyExtractor={item => item.id.toString()}
             horizontal
@@ -426,7 +447,7 @@ const Home = () => {
         </View>
 
         {/* View Cart Button */}
-       
+
 
         {/* Recommended for you */}
         <View style={styles.sectionContainer}>
@@ -498,43 +519,43 @@ const Home = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.beauticiansList}
           />
-          
+
         </View>
-        
-      </ScrollView>
-      {cartItems>0 && (
-          <View style={styles.viewCartContainer}>
-            <TouchableOpacity style={styles.viewCartButton}>
-              <View style={styles.viewCartContent}>
-                <View style={{paddingLeft:15}}>
-                  <Typography
-                    size={15}
-                    type={Font.GeneralSans_Semibold}
-                    color={Colors.white}
-                    style={styles.viewCartText}>
-                    View Carts
-                  </Typography>
-                  <Typography
-                    size={13}
-                    type={Font.GeneralSans_Regular}
-                    color={Colors.white}
-                    style={styles.viewCartItems}>
-                    {cartItems} Items
-                  </Typography>
-                </View>
-                <View style={styles.cartBadge}>
-                  <Typography
-                    size={12}
-                    type={Font.GeneralSans_Bold}
-                    color={Colors.white}>
-                    {cartItems}
-                  </Typography>
-                </View>
+
+      </ScrollView >
+      {cartItems > 0 && (
+        <View style={styles.viewCartContainer}>
+          <TouchableOpacity style={styles.viewCartButton}>
+            <View style={styles.viewCartContent}>
+              <View style={{ paddingLeft: 15 }}>
+                <Typography
+                  size={15}
+                  type={Font.GeneralSans_Semibold}
+                  color={Colors.white}
+                  style={styles.viewCartText}>
+                  View Carts
+                </Typography>
+                <Typography
+                  size={13}
+                  type={Font.GeneralSans_Regular}
+                  color={Colors.white}
+                  style={styles.viewCartItems}>
+                  {cartItems} Items
+                </Typography>
               </View>
-            </TouchableOpacity>
-          </View>
-        )}
-    </View>
+              <View style={styles.cartBadge}>
+                <Typography
+                  size={12}
+                  type={Font.GeneralSans_Bold}
+                  color={Colors.white}>
+                  {cartItems}
+                </Typography>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View >
 
   );
 };
@@ -575,8 +596,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: width * 0.05,
-    paddingTop:10,
-    paddingBottom: height * 0.022,
+    paddingTop: 10,
   },
   headerActions: {
     flexDirection: 'row',
@@ -609,43 +629,30 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    paddingHorizontal: width * 0.05,
-    marginBottom: height * 0.022,
-    gap: width * 0.023,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 178, 114, 0.2)',
-    borderRadius: width * 0.028,
-    paddingHorizontal: width * 0.047,
-    height: height * 0.065,
-  },
-  searchIcon: {
-    width: width * 0.037,
-    height: width * 0.037,
-    marginRight: width * 0.023,
-    tintColor: '#434B67',
-  },
-  searchPlaceholder: {
-    flex: 1,
-  },
-  filterButton: {
-    width: width * 0.141,
-    height: width * 0.141,
-    backgroundColor: Colors.zyaraGreen,
-    borderRadius: width * 0.028,
-    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
     justifyContent: 'center',
+    paddingBottom:20
   },
+
+  filterButton: {
+    height: 60,
+    width: 60,
+    backgroundColor: 'green',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+    marginTop:20
+  },
+
   filterIcon: {
-    width: width * 0.047,
-    height: width * 0.047,
-    tintColor: Colors.white,
+    height: 22,
+    width: 22,
+
   },
+
   bannerContainer: {
     paddingHorizontal: width * 0.05,
     marginBottom: height * 0.032,
@@ -704,9 +711,9 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.016,
   },
   categoriesList: {
- 
+
     paddingRight: width * 0.047,
-   
+
   },
   categoryCard: {
     width: width * 0.28,
@@ -728,10 +735,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.05,
     marginBottom: height * 0.011,
     alignItems: 'center',
-    position:'absolute', bottom:0, zIndex:1, alignSelf:'center'
+    position: 'absolute', bottom: 0, zIndex: 1, alignSelf: 'center'
   },
   viewCartButton: {
-width:'65%',
+    width: '65%',
     height: height * 0.049,
     backgroundColor: Colors.zyaraGreen,
     borderRadius: 100,
@@ -745,7 +752,7 @@ width:'65%',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
- 
+
   },
   viewCartText: {
     textTransform: 'capitalize',
