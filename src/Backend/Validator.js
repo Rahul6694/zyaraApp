@@ -279,10 +279,10 @@ export const validators = {
 
     const trimmedValue = value.trim();
 
-    // Check if the value is exactly 6 digits
-    const OTP_REGEX = /^\d{6}$/;
+    // Check if the value is exactly 4 digits
+    const OTP_REGEX = /^\d{4}$/;
     if (!OTP_REGEX.test(trimmedValue)) {
-      return `${name} must be a 6-digit number.`;
+      return `${name} must be a 4-digit number.`;
     }
 
     return null; // valid

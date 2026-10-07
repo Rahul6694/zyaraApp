@@ -10,16 +10,30 @@ import ScreenHeader from '../../Component/ScreenHeader';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import moment from 'moment';
+import { formatPrice } from '../../Utils/imageUrl';
+
+// "14:00-14:30" -> "02:00 pm - 02:30 pm"
+const slotLabel = slot =>
+    String(slot || '')
+        .split('-')
+        .map(t => moment(t, 'HH:mm').format('hh:mm a'))
+        .join(' - ');
 
 const { width } = Dimensions.get('window');
 
 const Congratulations = () => {
     const navigation = useNavigation();
+    const route = useRoute();
+    const booking = route?.params?.booking;
 
     const handleKeepBrowsing = () => {
-        // Navigate to home or previous screen
-        navigation.navigate('Home');
+        navigation.navigate('Home', { screen: 'Home' });
+    };
+
+    const handleViewBookings = () => {
+        navigation.navigate('Home', { screen: 'My Booking' });
     };
 
     return (
@@ -61,8 +75,27 @@ const Congratulations = () => {
                             size={17}
                             color="#090909"
                             style={styles.successMessage}>
-                            Your beauty service has been booked successfully!
+                            Your booking request has been sent!
                         </Typography>
+
+                        {!!booking && (
+                            <View style={styles.bookingCard}>
+                                <View style={styles.bookingRow}>
+                                    <Typography type={Font.GeneralSans_Regular} size={14} color="#6B6B6B">Booking ID</Typography>
+                                    <Typography type={Font.GeneralSans_Semibold} size={14} color="#1A1A1A">{booking.booking_number}</Typography>
+                                </View>
+                                <View style={styles.bookingRow}>
+                                    <Typography type={Font.GeneralSans_Regular} size={14} color="#6B6B6B">When</Typography>
+                                    <Typography type={Font.GeneralSans_Semibold} size={14} color="#1A1A1A">
+                                        {moment(booking.booking_date).format('D MMM')} · {slotLabel(booking.time_slot)}
+                                    </Typography>
+                                </View>
+                                <View style={styles.bookingRow}>
+                                    <Typography type={Font.GeneralSans_Regular} size={14} color="#6B6B6B">Total (pay after service)</Typography>
+                                    <Typography type={Font.GeneralSans_Semibold} size={14} color="#1A1A1A">{formatPrice(booking.total_amount)}</Typography>
+                                </View>
+                            </View>
+                        )}
 
                         {/* Description Text */}
                         <Typography
@@ -70,17 +103,27 @@ const Congratulations = () => {
                             size={15}
                             color="#414141"
                             style={styles.descriptionText}>
-                            Sit back and relax while we make sure a professional beautician reaches you right on time for your pampering session.
+                            {booking?.beautician_name
+                                ? `${booking.beautician_name} will confirm your request shortly. You can track it in My Bookings.`
+                                : 'We are assigning a professional beautician. You can track your request in My Bookings.'}
                         </Typography>
                     </View>
 
                  
                         <Button
-                            title="KEEP BROWSING"
-                            onPress={handleKeepBrowsing}
+                            title="VIEW MY BOOKINGS"
+                            onPress={handleViewBookings}
                             style={styles.button}
                             linerColor={['#00B272', '#00B272']}
                             title_style={styles.buttonText}
+                            main_style={styles.buttonMain}
+                        />
+                        <Button
+                            title="KEEP BROWSING"
+                            onPress={handleKeepBrowsing}
+                            style={[styles.button, styles.secondaryButton]}
+                            linerColor={['#E6F8F0', '#E6F8F0']}
+                            title_style={styles.secondaryButtonText}
                             main_style={styles.buttonMain}
                         />
                     </View>
@@ -112,28 +155,48 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: '24%',
+        paddingTop: '12%',
+        paddingHorizontal: 22,
     },
     checkmarkCircle: {
-        width: 160,
-        height: 160,
-        borderRadius: 80,
-        backgroundColor: '#FFBA6A',
+        width: 130,
+        height: 130,
+        borderRadius: 65,
+        backgroundColor: '#00B272',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 40,
+        marginBottom: 28,
+    },
+    bookingCard: {
+        width: '100%',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: '#DDFFE8',
+        padding: 14,
+        marginBottom: 16,
+    },
+    bookingRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+    },
+    secondaryButtonText: {
+        color: '#00925D',
+    },
+    secondaryButton: {
+        marginTop: 10,
+        marginBottom: 20,
     },
     checkmarkIcon: {
     },
     congratulationsText: {
         marginBottom: 20,
         textAlign: 'center',
-        width: 249,
     },
     successMessage: {
         marginBottom: 16,
         textAlign: 'center',
-        width: 344,
         marginTop: 8,
     },
     descriptionText: {

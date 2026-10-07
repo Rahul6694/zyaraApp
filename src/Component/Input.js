@@ -31,7 +31,7 @@ const Input = ({
   source_eye,
   style_inputContainer,
   placeholderTextColor,
-  borderColor = "#DDDDDD",
+  borderColor = Colors.border,
   countryPicker = false,
   onCountryPress = () => {},
   country,
@@ -49,6 +49,7 @@ const Input = ({
   showImage2,
 }) => {
   const [show, setShow] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   const fontScale = PixelRatio?.getFontScale();
 
@@ -87,7 +88,14 @@ const Input = ({
           style={[
             styles.input_container,
             style_inputContainer,
-            {borderColor: error ? 'red' : borderColor},
+            {
+              borderColor: error
+                ? Colors.danger
+                : focused
+                ? Colors.brand
+                : borderColor,
+            },
+            focused && !error && styles.input_focused,
           ]}>
           {showImage && (
             <Image source={source} style={[styles.image, firstStyle]} />
@@ -131,7 +139,7 @@ const Input = ({
           )}
 
           <TextInput
-            style={[styles.input, {fontSize: 13 / fontScale}, style_input]}
+            style={[styles.input, {fontSize: 15 / fontScale}, style_input]}
             onChangeText={onChange}
             multiline={multiline}
             numberOfLines={numberOfLines}
@@ -142,8 +150,13 @@ const Input = ({
             secureTextEntry={secureTextEntry}
             value={value}
             textAlignVertical={multiline ? 'top' : 'center'}
-            placeholderTextColor={placeholderTextColor}
-            onFocus={onFocus}
+            placeholderTextColor={placeholderTextColor || Colors.textMuted}
+            selectionColor={Colors.brand}
+            onFocus={e => {
+              setFocused(true);
+              onFocus(e);
+            }}
+            onBlur={() => setFocused(false)}
           />
           {showImage2 && (
             <Image
@@ -189,7 +202,7 @@ export default Input;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
+    marginVertical: 6,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -198,20 +211,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   txt_style: {
-    color: '#282727',
-    fontize: 14,
-    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontFamily: Font.GeneralSans_Medium,
   },
   input_container: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 14,
     paddingHorizontal: 4,
     paddingVertical: 5,
-    height: 60,
+    height: 56,
     backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor:"#DDDDDD"
+    borderWidth: 1.2,
+    borderColor: Colors.border,
+  },
+  input_focused: {
+    backgroundColor: Colors.brandTint,
   },
 
   input: {
@@ -274,9 +290,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   errorText: {
-    color: 'red',
-    fontize: 11,
-    paddingTop: 8,
+    color: Colors.danger,
+    fontSize: 12,
+    paddingTop: 6,
   },
   image: {
     height: 20,

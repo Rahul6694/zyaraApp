@@ -7,13 +7,14 @@ import {
     TouchableOpacity,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { Colors } from '../../Constants/Colors';
+import { Colors, Shadow } from '../../Constants/Colors';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../Component/ScreenHeader';
 import Input from '../../Component/Input';
 import { ImageConstant } from '../../Constants/ImageConstant';
 import { GET } from '../../Backend/Backend';
+import { getImageUrl } from '../../Utils/imageUrl';
 import Typography from '../../Component/UI/Typography';
 import { CATEGORIES } from '../../Backend/api_routes';
 import { Font } from '../../Constants/Font';
@@ -30,18 +31,15 @@ const Categories = () => {
 
     const getData = () => {
         GET(
-            CATEGORIES,
+            `${CATEGORIES}?limit=100`,
             res => {
-                console.log('Categories:', res);
                 setCategoryList(res?.data);
-
             },
             err => {
                 console.log('Get Error:', err);
             }
         );
     };
-    console.log('categors:', categoryList)
 
     const COLORS = ['#FFE7D5', '#C7F4D1', '#D9E4FE', '#EBEBCD', '#E2D5F4', '#C7F4D1', '#FFD2D2', "#C7F4D1"];
     return (
@@ -59,9 +57,9 @@ const Categories = () => {
                         mainStyle={{ marginTop: 5 }}
                         source={ImageConstant.search}
                         showImage={true}
-                        placeholder="Search"
+                        placeholder="Search categories"
+                        showTitle={false}
                         style_inputContainer={styles.searchInput}
-                        placeholderTextColor="rgba(0,0,0,0.5)"
                     />
 
                     <FlatList
@@ -71,6 +69,7 @@ const Categories = () => {
                         showsVerticalScrollIndicator={false}
                         renderItem={({ item, index }) => (
                             <TouchableOpacity
+                                activeOpacity={0.85}
                                 style={[styles.card, { backgroundColor: item.color || COLORS[index % COLORS.length] }]}
                                 onPress={() => navigation.navigate('SubCategories', {
                                     categoryId: item.id,
@@ -79,29 +78,28 @@ const Categories = () => {
                                     name: item.name,
                                 })}>
                                 <View style={styles.cardContent}>
-                                    <Typography type={Font.GeneralSans_Bold} size={22} color='#363620' style={styles.cardTitle}>{item.name}</Typography>
+                                    <Typography type={Font.GeneralSans_Semibold} size={19} color={Colors.textPrimary} style={styles.cardTitle}>{item.name}</Typography>
                                     <Typography
                                         style={styles.cardSubtitle}
                                         numberOfLines={2}
                                         ellipsizeMode="tail"
-                                        color='#000000'
-                                        size={14}
+                                        color={Colors.textSecondary}
+                                        size={13}
+                                        lineHeight={18}
                                     >
                                         {item.description}
                                     </Typography>
+                                    <View style={styles.exploreChip}>
+                                        <Typography size={12} type={Font.GeneralSans_Semibold} color={Colors.textPrimary}>
+                                            Explore  →
+                                        </Typography>
+                                    </View>
                                 </View>
 
                                 <Image
-                                    source={{ uri: item?.image }}
+                                    source={{ uri: getImageUrl(item?.image) || undefined }}
                                     style={styles.cardImage}
                                     resizeMode="contain"
-                                    onError={(error) => {
-                                        console.log('Image load error:', error.nativeEvent.error);
-                                        console.log('Failed URL:', item?.image);
-                                    }}
-                                    onLoad={() => {
-                                        console.log('Image loaded successfully:', item?.image);
-                                    }}
                                 />
                             </TouchableOpacity>
                         )}
@@ -131,37 +129,46 @@ const styles = StyleSheet.create({
     },
 
     searchInput: {
-        height: 55,
-        borderRadius: 12,
+        height: 52,
+        borderRadius: 14,
         backgroundColor: Colors.white,
+        ...Shadow.sm,
     },
 
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 10,
-        borderRadius: 12,
-        marginTop: 15,
+        paddingVertical: 12,
+        paddingRight: 8,
+        borderRadius: 20,
+        marginTop: 14,
+        overflow: 'hidden',
     },
 
     cardImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 12,
+        width: 110,
+        height: 110,
+        borderRadius: 16,
         resizeMode: 'contain',
-        zIndex: 999
     },
 
     cardContent: {
-        marginLeft: 15,
+        marginLeft: 18,
         flex: 1,
     },
 
-    cardTitle: {
-        fontSize: 18,
-    },
+    cardTitle: {},
 
     cardSubtitle: {
-        marginTop: 3,
+        marginTop: 4,
+    },
+
+    exploreChip: {
+        alignSelf: 'flex-start',
+        marginTop: 10,
+        backgroundColor: 'rgba(255,255,255,0.7)',
+        borderRadius: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
     },
 });

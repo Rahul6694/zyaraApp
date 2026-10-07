@@ -21,16 +21,21 @@ const ImageModal = ({
   TimeVal,
   mediaType = 'photo',
   deleteImage = false,
-  title
+  title,
+  cropping = true,
 }) => {
+  // Without cropping keep photos large (gallery); with cropping keep the old small square
+  const sizeOptions = cropping
+    ? { width: 200, height: 200 }
+    : { compressImageMaxWidth: 1600, compressImageMaxHeight: 1600 };
+
 
   const OpenCamera = () => {
     setTimeout(() => {
       openCamera({
         mediaType: mediaType,
-        width: 200,
-        height: 200,
-        cropping: mediaType !== 'video',
+        ...sizeOptions,
+        cropping: cropping && mediaType !== 'video',
         compressImageQuality: 0.8,
         compressImageFormat: 'jpeg', // Convert to JPEG
         forceJpg: true,
@@ -53,9 +58,8 @@ const ImageModal = ({
     setTimeout(() => {
       openPicker({
         mediaType: mediaType,
-        width: 200,
-        height: 200,
-        cropping: mediaType !== 'video',
+        ...sizeOptions,
+        cropping: cropping && mediaType !== 'video',
         multiple: multiple,
         compressImageQuality: 0.8,
         compressImageFormat: 'jpeg',

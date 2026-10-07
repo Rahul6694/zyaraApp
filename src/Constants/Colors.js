@@ -27,4 +27,38 @@ export const Colors = {
   LightWhite: '#05050740',
   lableColor: '#252D38',
   primary: '#0299911A',
+
+  // Design tokens — prefer these for new UI work
+  brand: '#00B272',
+  brandDark: '#00925D',
+  brandSoft: '#E6F8F0',
+  brandTint: '#F4FCF8',
+  textPrimary: '#14181F',
+  textSecondary: '#5F6673',
+  textMuted: '#9AA0AB',
+  border: '#E6E8EC',
+  divider: '#F0F1F4',
+  surface: '#FFFFFF',
+  background: '#F7F9F8',
+  danger: '#E5484D',
+  dangerSoft: '#FDECEC',
+  star: '#F5A524',
+};
+
+// Soft, consistent elevation used by cards, tab bars and buttons
+export const Shadow = {
+  sm: {
+    shadowColor: '#0F2A1F',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#0F2A1F',
+    shadowOffset: {width: 0, height: 6},
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 5,
+  },
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     View,
@@ -19,64 +19,90 @@ import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import SimpleToast from 'react-native-simple-toast';
+import { getStates, getCitiesByState } from '../../Backend/BeauticianAPI';
+import { createUserAddress } from '../../Backend/BookingAPI';
 
 const { width } = Dimensions.get('window');
 
 const AddNewAddress = () => {
     const navigation = useNavigation();
     
+    const user = useSelector(state => state.userDetails) || {};
+
     const [deliveryOption, setDeliveryOption] = useState('Home');
-    const [name, setName] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
+    const [name, setName] = useState(user?.name || '');
+    const [phoneNumber, setPhoneNumber] = useState(user?.number || user?.phone || '');
     const [selectedState, setSelectedState] = useState(null);
     const [selectedCity, setSelectedCity] = useState(null);
-    const [selectedStreet, setSelectedStreet] = useState(null);
+    const [houseNo, setHouseNo] = useState('');
+    const [roadName, setRoadName] = useState('');
+    const [pincode, setPincode] = useState('');
+    const [stateList, setStateList] = useState([]);
+    const [cityList, setCityList] = useState([]);
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-    const stateList = [
-        { label: "Haryana", value: "HR" },
-        { label: "Punjab", value: "PB" },
-        { label: "Delhi", value: "DL" },
-        { label: "Rajasthan", value: "RJ" },
-        { label: "Assam", value: "AS" },
-        { label: "Gujarat", value: "GJ" },
-        { label: "Maharashtra", value: "MH" },
-    ];
+    useEffect(() => {
+        getStates(
+            res => setStateList((res?.data || []).map(st => ({ label: st.name, value: st.id }))),
+            err => console.log('States error:', err),
+        );
+    }, []);
 
-    const cityList = [
-        { label: "Rohtak", value: "Rohtak" },
-        { label: "Hisar", value: "Hisar" },
-        { label: "Panipat", value: "Panipat" },
-        { label: "Gurugram", value: "Gurugram" },
-        { label: "Barpeta", value: "Barpeta" },
-        { label: "Guwahati", value: "Guwahati" },
-    ];
-
-    const streetList = [
-        { label: "Main Street", value: "Main Street" },
-        { label: "Park Avenue", value: "Park Avenue" },
-        { label: "Central Road", value: "Central Road" },
-        { label: "Market Street", value: "Market Street" },
-    ];
+    // Cities depend on the chosen state
+    useEffect(() => {
+        setSelectedCity(null);
+        setCityList([]);
+        if (!selectedState) {
+            return;
+        }
+        getCitiesByState(
+            selectedState,
+            res => setCityList((res?.data || []).map(c => ({ label: c.name, value: c.name }))),
+            err => console.log('Cities error:', err),
+        );
+    }, [selectedState]);
 
     const deliveryOptions = ['Home', 'Office', 'Other'];
 
     const handleSave = () => {
+        const nextErrors = {};
+        if (!name.trim()) nextErrors.name = 'Name is required';
+        if (!/^\d{10}$/.test(phoneNumber.trim())) nextErrors.phone = 'Enter a valid 10-digit number';
+        if (!selectedState) nextErrors.state = 'Select a state';
+        if (!selectedCity) nextErrors.city = 'Select a city';
+        if (!houseNo.trim()) nextErrors.houseNo = 'House / flat number is required';
+        if (pincode && !/^\d{6}$/.test(pincode.trim())) nextErrors.pincode = 'Pincode must be 6 digits';
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) {
+            return;
+        }
+
         setLoading(true);
-        // Save address logic
-        console.log('Address saved:', {
-            deliveryOption,
-            name,
-            phoneNumber,
-            state: selectedState,
-            city: selectedCity,
-            street: selectedStreet,
-        });
-        
-        setTimeout(() => {
-            setLoading(false);
-            navigation.navigate('SelectLocation');
-        }, 1000);
+        createUserAddress(
+            {
+                label: deliveryOption,
+                name: name.trim(),
+                phone: phoneNumber.trim(),
+                state: stateList.find(st => st.value === selectedState)?.label,
+                city: selectedCity,
+                house_no: houseNo.trim(),
+                road_name: roadName.trim(),
+                pincode: pincode.trim(),
+                is_default: true,
+            },
+            () => {
+                setLoading(false);
+                SimpleToast.show('Address saved', SimpleToast.SHORT);
+                navigation.goBack();
+            },
+            err => {
+                setLoading(false);
+                SimpleToast.show(err?.data?.message || 'Could not save address', SimpleToast.SHORT);
+            },
+        );
     };
 
     return (
@@ -146,6 +172,7 @@ const AddNewAddress = () => {
                                     placeholder="enter name"
                                     value={name}
                                     onChange={setName}
+                                    error={errors.name}
                                     showImage={true}
                                     source={ImageConstant.user}
                                     style_inputContainer={styles.inputContainer}
@@ -162,6 +189,8 @@ const AddNewAddress = () => {
                                     placeholder="enter mobile number"
                                     value={phoneNumber}
                                     onChange={setPhoneNumber}
+                                    maxLength={10}
+                                    error={errors.phone}
                                     keyboardType="phone-pad"
                                     countryPicker={true}
                                     style_inputContainer={styles.inputContainer}
@@ -181,6 +210,9 @@ const AddNewAddress = () => {
                                     leftIcons={ImageConstant.location2}
                                     value={selectedState}
                                     placeholder="select"
+                                    search
+                                    searchPlaceholder="Search state"
+                                    error={errors.state}
                                     onChange={(item) => setSelectedState(item.value)}
                                     style_dropdown={styles.dropdownStyle}
                                 />
@@ -195,35 +227,68 @@ const AddNewAddress = () => {
                                     leftIconsShow
                                     leftIcons={ImageConstant.location2}
                                     value={selectedCity}
-                                    placeholder="select"
+                                    placeholder={selectedState ? 'select' : 'select a state first'}
+                                    search
+                                    searchPlaceholder="Search city"
+                                    disable={!selectedState}
+                                    error={errors.city}
                                     onChange={(item) => setSelectedCity(item.value)}
                                     style_dropdown={styles.dropdownStyle}
                                 />
                             </View>
 
-                            {/* Street Dropdown */}
+                            {/* House / street */}
                             <View style={styles.inputFieldContainer}>
-                                <DropdownNew
-                                    MainBoxStyle={{ width: '100%', alignSelf: 'center' }}
-                                    data={streetList}
-                                    title="Street (include house number)"
-                                    leftIconsShow
-                                    leftIcons={ImageConstant.location2}
-                                    value={selectedStreet}
-                                    placeholder="select"
-                                    onChange={(item) => setSelectedStreet(item.value)}
-                                    style_dropdown={styles.dropdownStyle}
+                                <Input
+                                    title="House / Flat No."
+                                    placeholder="e.g. 12B, Green Park Apartments"
+                                    value={houseNo}
+                                    onChange={setHouseNo}
+                                    error={errors.houseNo}
+                                    style_inputContainer={styles.inputContainer}
+                                    mainStyle={styles.inputMainStyle}
+                                    showTitle={true}
+                                    placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                />
+                            </View>
+
+                            <View style={styles.inputFieldContainer}>
+                                <Input
+                                    title="Street / Area"
+                                    placeholder="e.g. MG Road, Athwa"
+                                    value={roadName}
+                                    onChange={setRoadName}
+                                    style_inputContainer={styles.inputContainer}
+                                    mainStyle={styles.inputMainStyle}
+                                    showTitle={true}
+                                    placeholderTextColor="rgba(0, 0, 0, 0.5)"
+                                />
+                            </View>
+
+                            <View style={styles.inputFieldContainer}>
+                                <Input
+                                    title="Pincode"
+                                    placeholder="6-digit pincode"
+                                    value={pincode}
+                                    onChange={setPincode}
+                                    maxLength={6}
+                                    keyboardType="number-pad"
+                                    error={errors.pincode}
+                                    style_inputContainer={styles.inputContainer}
+                                    mainStyle={styles.inputMainStyle}
+                                    showTitle={true}
+                                    placeholderTextColor="rgba(0, 0, 0, 0.5)"
                                 />
                             </View>
 
                             {/* Save Button */}
                             <Button
-                                title={loading ? 'SAVING...' : 'SAVE'}
+                                title="SAVE"
                                 onPress={handleSave}
                                 style={styles.button}
                                 linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                                 title_style={styles.buttonText}
-                                disabled={loading}
+                                loader={loading}
                             />
                         </View>
                     </ScrollView>
@@ -311,7 +376,7 @@ const styles = StyleSheet.create({
     },
 
     inputFieldContainer: {
-        marginBottom: 16,
+        marginBottom: 4,
     },
 
     inputContainer: {

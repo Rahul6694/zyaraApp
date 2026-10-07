@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     StyleSheet,
     View,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Dimensions,
+    TouchableOpacity,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../../Constants/Colors';
@@ -17,69 +17,141 @@ import { ImageConstant } from '../../Constants/ImageConstant';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import SimpleToast from 'react-native-simple-toast';
+import moment from 'moment';
+import { getStates, getCitiesByState } from '../../Backend/BeauticianAPI';
+import { getUserAddresses, createBooking } from '../../Backend/BookingAPI';
+import { formatAddress } from './SelectLocation';
 
-const { width } = Dimensions.get('window');
 
 const BookingRequest = () => {
     const navigation = useNavigation();
+    const route = useRoute();
+    const params = route?.params || {};
+    const user = useSelector(state => state.userDetails) || {};
+    const forSomeoneElse = !!params.forSomeoneElse;
 
-    const [fullName, setFullName] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [emailAddress, setEmailAddress] = useState('');
+    const [fullName, setFullName] = useState(forSomeoneElse ? '' : user?.name || '');
+    const [phoneNumber, setPhoneNumber] = useState(forSomeoneElse ? '' : user?.number || user?.phone || '');
+    const [emailAddress, setEmailAddress] = useState(forSomeoneElse ? '' : user?.email || '');
     const [houseNo, setHouseNo] = useState('');
     const [roadName, setRoadName] = useState('');
-    const [selectedPincode, setSelectedPincode] = useState(null);
+    const [pincode, setPincode] = useState('');
     const [selectedState, setSelectedState] = useState(null);
     const [selectedCity, setSelectedCity] = useState(null);
+    const [stateList, setStateList] = useState([]);
+    const [cityList, setCityList] = useState([]);
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [savedAddress, setSavedAddress] = useState(null);
+    const [useNewAddress, setUseNewAddress] = useState(false);
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-    const pincodeList = [
-        { label: '781301', value: '781301' },
-        { label: '781302', value: '781302' },
-        { label: '781303', value: '781303' },
-        { label: '781304', value: '781304' },
-    ];
+    // Default saved address (refreshes after "Change")
+    useFocusEffect(
+        useCallback(() => {
+            getUserAddresses(
+                res => {
+                    const list = res?.data || [];
+                    setSavedAddress(list.find(a => a.is_default) || list[0] || null);
+                },
+                () => {},
+            );
+        }, []),
+    );
 
-    const stateList = [
-        { label: 'Haryana', value: 'HR' },
-        { label: 'Punjab', value: 'PB' },
-        { label: 'Delhi', value: 'DL' },
-        { label: 'Rajasthan', value: 'RJ' },
-        { label: 'Assam', value: 'AS' },
-        { label: 'Gujarat', value: 'GJ' },
-        { label: 'Maharashtra', value: 'MH' },
-    ];
+    useEffect(() => {
+        getStates(
+            res => setStateList((res?.data || []).map(st => ({ label: st.name, value: st.id }))),
+            () => {},
+        );
+    }, []);
 
-    const cityList = [
-        { label: 'Rohtak', value: 'Rohtak' },
-        { label: 'Hisar', value: 'Hisar' },
-        { label: 'Panipat', value: 'Panipat' },
-        { label: 'Gurugram', value: 'Gurugram' },
-        { label: 'Barpeta', value: 'Barpeta' },
-        { label: 'Guwahati', value: 'Guwahati' },
-    ];
+    useEffect(() => {
+        setSelectedCity(null);
+        setCityList([]);
+        if (!selectedState) {
+            return;
+        }
+        getCitiesByState(
+            selectedState,
+            res => setCityList((res?.data || []).map(c => ({ label: c.name, value: c.name }))),
+            () => {},
+        );
+    }, [selectedState]);
+
+    const showAddressForm = !savedAddress || useNewAddress;
 
     const handleSubmit = () => {
-        setLoading(true);
-        console.log('Booking request submitted:', {
-            fullName,
-            phoneNumber,
-            emailAddress,
-            houseNo,
-            roadName,
-            pincode: selectedPincode,
-            state: selectedState,
-            city: selectedCity,
-            specialInstructions,
-        });
+        const nextErrors = {};
+        if (!fullName.trim()) nextErrors.fullName = 'Name is required';
+        if (!/^\d{10}$/.test(phoneNumber.trim())) nextErrors.phone = 'Enter a valid 10-digit number';
+        if (emailAddress.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim())) nextErrors.email = 'Enter a valid email';
+        if (showAddressForm) {
+            if (!houseNo.trim()) nextErrors.houseNo = 'House / building is required';
+            if (!roadName.trim()) nextErrors.roadName = 'Road / area is required';
+            if (!/^\d{6}$/.test(pincode.trim())) nextErrors.pincode = 'Enter a 6-digit pincode';
+            if (!selectedState) nextErrors.state = 'Select a state';
+            if (!selectedCity) nextErrors.city = 'Select a city';
+        }
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) {
+            SimpleToast.show('Please fill the highlighted fields', SimpleToast.SHORT);
+            return;
+        }
 
-        setTimeout(() => {
-            setLoading(false);
-            navigation.navigate('Congratulations');
-        }, 1000);
+        const body = {
+            booking_date: params.bookingDate,
+            time_slot: params.timeSlot,
+            number_of_people: params.numberOfPeople || 1,
+            beautician_id: params.beauticianId || undefined,
+            contact_name: fullName.trim(),
+            contact_phone: phoneNumber.trim(),
+            contact_email: emailAddress.trim() || undefined,
+            special_instructions: specialInstructions.trim() || undefined,
+            payment_method: 'cash',
+        };
+        if (showAddressForm) {
+            Object.assign(body, {
+                house_no: houseNo.trim(),
+                road_name: roadName.trim(),
+                pincode: pincode.trim(),
+                state: stateList.find(st => st.value === selectedState)?.label,
+                city: selectedCity,
+            });
+        } else {
+            body.address_id = savedAddress.id;
+        }
+
+        setLoading(true);
+        createBooking(
+            body,
+            res => {
+                setLoading(false);
+                navigation.navigate('Congratulations', { booking: res?.data });
+            },
+            err => {
+                setLoading(false);
+                const message = err?.data?.message || 'Could not send booking request';
+                SimpleToast.show(message, SimpleToast.LONG);
+                // Slot got taken meanwhile: go back to pick another one
+                if (err?.status === 409) {
+                    navigation.navigate('SlotBooking', { numberOfPeople: params.numberOfPeople });
+                }
+            },
+        );
     };
+
+    const summaryLine = (label, value) => (
+        <View style={styles.summaryLine}>
+            <Typography type={Font.GeneralSans_Regular} size={14} color="#6B6B6B">{label}</Typography>
+            <Typography type={Font.GeneralSans_Semibold} size={14} color="#1A1A1A" style={styles.summaryValue}>
+                {value}
+            </Typography>
+        </View>
+    );
 
     return (
         <LinearGradient
@@ -101,6 +173,14 @@ const BookingRequest = () => {
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled">
                         <View style={styles.content}>
+                            {/* Booking summary */}
+                            <View style={styles.summaryCard}>
+                                {summaryLine('Date', params.bookingDate ? moment(params.bookingDate).format('ddd, D MMM YYYY') : '-')}
+                                {summaryLine('Time', params.timeSlotLabel || '-')}
+                                {summaryLine('Beautician', params.beauticianName || 'Zyara will assign')}
+                                {summaryLine('People', String(params.numberOfPeople || 1))}
+                            </View>
+
                             {/* Full Name Input */}
                             <View style={styles.inputFieldContainer}>
                                 <Input
@@ -108,6 +188,7 @@ const BookingRequest = () => {
                                     placeholder="enter name"
                                     value={fullName}
                                     onChange={setFullName}
+                                    error={errors.fullName}
                                     showImage={true}
                                     source={ImageConstant.user}
                                     style_inputContainer={styles.inputContainer}
@@ -124,6 +205,8 @@ const BookingRequest = () => {
                                     placeholder="enter mobile number"
                                     value={phoneNumber}
                                     onChange={setPhoneNumber}
+                                    maxLength={10}
+                                    error={errors.phone}
                                     keyboardType="phone-pad"
                                     countryPicker={true}
                                     style_inputContainer={styles.inputContainer}
@@ -140,7 +223,9 @@ const BookingRequest = () => {
                                     placeholder="example@gmail.com"
                                     value={emailAddress}
                                     onChange={setEmailAddress}
+                                    error={errors.email}
                                     keyboardType="email-address"
+                                    autoCapitalize="none"
                                     showImage={true}
                                     source={ImageConstant.email}
                                     style_inputContainer={styles.inputContainer}
@@ -150,16 +235,52 @@ const BookingRequest = () => {
                                 />
                             </View>
 
-                            {/* Enter Your Address Section */}
+                            {/* Address Section */}
                             <View style={styles.addressSection}>
                                 <Typography
                                     type={Font.GeneralSans_Semibold}
                                     size={20}
                                     color="#1A1A1A"
                                     style={styles.sectionTitle}>
-                                    Enter Your Address
+                                    {showAddressForm ? 'Enter Your Address' : 'Service Address'}
                                 </Typography>
 
+                                {!showAddressForm && (
+                                    <View style={styles.savedAddressCard}>
+                                        <View style={{ flex: 1 }}>
+                                            <Typography type={Font.GeneralSans_Semibold} size={15} color="#1A1A1A">
+                                                {savedAddress.label}{savedAddress.name ? ` · ${savedAddress.name}` : ''}
+                                            </Typography>
+                                            <Typography
+                                                type={Font.GeneralSans_Regular}
+                                                size={14}
+                                                color="#6B6B6B"
+                                                style={{ marginTop: 3, lineHeight: 20 }}>
+                                                {formatAddress(savedAddress)}
+                                            </Typography>
+                                        </View>
+                                        <TouchableOpacity onPress={() => navigation.navigate('SelectLocation', { returnTo: 'back' })}>
+                                            <Typography type={Font.GeneralSans_Semibold} size={14} color={Colors.zyaraGreen}>
+                                                Change
+                                            </Typography>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+
+                                {!!savedAddress && (
+                                    <TouchableOpacity onPress={() => setUseNewAddress(v => !v)} style={styles.toggleAddress}>
+                                        <Typography
+                                            type={Font.GeneralSans_Medium}
+                                            size={14}
+                                            color={Colors.zyaraGreen}
+                                            style={{ textDecorationLine: 'underline' }}>
+                                            {useNewAddress ? 'Use my saved address' : 'Use a different address'}
+                                        </Typography>
+                                    </TouchableOpacity>
+                                )}
+
+                                {showAddressForm && (
+                                <>
                                 {/* House No. Building Name */}
                                 <View style={styles.inputFieldContainer}>
                                     <Input
@@ -167,6 +288,7 @@ const BookingRequest = () => {
                                         placeholder="enter"
                                         value={houseNo}
                                         onChange={setHouseNo}
+                                        error={errors.houseNo}
                                         style_inputContainer={styles.inputContainer}
                                         mainStyle={styles.inputMainStyle}
                                         showTitle={true}
@@ -181,6 +303,7 @@ const BookingRequest = () => {
                                         placeholder="enter"
                                         value={roadName}
                                         onChange={setRoadName}
+                                        error={errors.roadName}
                                         style_inputContainer={styles.inputContainer}
                                         mainStyle={styles.inputMainStyle}
                                         showTitle={true}
@@ -188,18 +311,20 @@ const BookingRequest = () => {
                                     />
                                 </View>
 
-                                {/* Pincode Dropdown */}
+                                {/* Pincode */}
                                 <View style={styles.inputFieldContainer}>
-                                    <DropdownNew
-                                        MainBoxStyle={{ width: '100%', alignSelf: 'center' }}
-                                        data={pincodeList}
+                                    <Input
                                         title="Pincode*"
-                                        leftIconsShow
-                                        leftIcons={ImageConstant.location2}
-                                        value={selectedPincode}
-                                        placeholder="select location"
-                                        onChange={(item) => setSelectedPincode(item.value)}
-                                        style_dropdown={styles.dropdownStyle}
+                                        placeholder="6-digit pincode"
+                                        value={pincode}
+                                        onChange={setPincode}
+                                        maxLength={6}
+                                        keyboardType="number-pad"
+                                        error={errors.pincode}
+                                        style_inputContainer={styles.inputContainer}
+                                        mainStyle={styles.inputMainStyle}
+                                        showTitle={true}
+                                        placeholderTextColor="#8C8C8C"
                                     />
                                 </View>
 
@@ -211,6 +336,9 @@ const BookingRequest = () => {
                                         title="State"
                                         value={selectedState}
                                         placeholder="select"
+                                        search
+                                        searchPlaceholder="Search state"
+                                        error={errors.state}
                                         onChange={(item) => setSelectedState(item.value)}
                                         style_dropdown={styles.dropdownStyle}
                                     />
@@ -223,42 +351,48 @@ const BookingRequest = () => {
                                         data={cityList}
                                         title="City"
                                         value={selectedCity}
-                                        placeholder="select"
+                                        placeholder={selectedState ? 'select' : 'select a state first'}
+                                        search
+                                        searchPlaceholder="Search city"
+                                        disable={!selectedState}
+                                        error={errors.city}
                                         onChange={(item) => setSelectedCity(item.value)}
                                         style_dropdown={styles.dropdownStyle}
                                     />
                                 </View>
+                                </>
+                                )}
                             </View>
 
                             <View style={styles.inputFieldContainer}>
                                 <Input
                                     title="Special Instructions"
-                                    placeholder="enter No. of Guests"
+                                    placeholder="e.g. landmark, parking, preferences"
                                     value={specialInstructions}
                                     onChange={setSpecialInstructions}
                                     multiline={true}
                                     numberOfLines={4}
                                     style_inputContainer={styles.specialInstructionsContainer}
+                                    style_input={styles.specialInstructionsInput}
+                                    maxLength={500}
                                     mainStyle={styles.inputMainStyle}
                                     showTitle={true}
                                     placeholderTextColor="#8C8C8C"
                                 />
                             </View>
-                           
 
-                          
-                                <Button
-                                    title={loading ? 'SUBMITTING...' : 'SUBMIT BOOKING REQUEST'}
-                                    onPress={handleSubmit}
-                                    style={styles.button}
-                                    linerColor={['#00B272', '#00B272']}
-                                    title_style={styles.buttonText}
-                                    loader={loading}
-                                    main_style={styles.buttonMain}
-                                />
-                    
                         </View>
                     </ScrollView>
+
+                    {/* Submit Button */}
+                    <View style={styles.bottomContainer}>
+                        <Button
+                            title="SUBMIT BOOKING REQUEST"
+                            onPress={handleSubmit}
+                            linerColor={['#00B272', '#00B272']}
+                            loader={loading}
+                        />
+                    </View>
                 </KeyboardAvoidingView>
             </View>
         </SafeAreaView>
@@ -269,6 +403,37 @@ const BookingRequest = () => {
 export default BookingRequest;
 
 const styles = StyleSheet.create({
+    summaryCard: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#DDFFE8',
+        borderRadius: 14,
+        padding: 14,
+        marginBottom: 8,
+    },
+    summaryLine: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+    },
+    summaryValue: {
+        flex: 1,
+        textAlign: 'right',
+        marginLeft: 12,
+    },
+    savedAddressCard: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#00B272',
+        borderRadius: 14,
+        padding: 14,
+        gap: 12,
+    },
+    toggleAddress: {
+        paddingVertical: 10,
+    },
     backgroundGradient: {
         flex: 1,
         width: '100%',
@@ -285,7 +450,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 10,
+        paddingBottom: 24,
         flexGrow: 1,
     },
     content: {
@@ -338,7 +503,9 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     specialInstructionsContainer: {
-        minHeight: 103,
+        height: 110,
+        alignItems: 'flex-start',
+        paddingVertical: 8,
         borderRadius: 12,
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
@@ -358,14 +525,16 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         alignItems: 'center',
     },
-    buttonMain: {
-        width: width - 44,
+    specialInstructionsInput: {
+        height: '100%',
+        paddingTop: 6,
     },
-    button: {
-       alignSelf:'center',
-       width:'100%',
-       marginTop:50,
-      
+    bottomContainer: {
+        paddingHorizontal: 22,
+        paddingBottom: 8,
+        paddingTop: 2,
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: '#EEEEEE',
     },
-    
 });

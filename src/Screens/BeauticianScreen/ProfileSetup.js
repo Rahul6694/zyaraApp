@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 4,
   },
   phoneNumberContainer: {
     flexDirection: 'row',

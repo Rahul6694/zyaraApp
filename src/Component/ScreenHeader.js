@@ -4,14 +4,12 @@ import {
   View,
   Image,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {ImageConstant} from '../Constants/ImageConstant';
 import {Font} from '../Constants/Font';
+import {Colors, Shadow} from '../Constants/Colors';
 import Typography from './UI/Typography';
-
-const {width} = Dimensions.get('window');
 
 const ScreenHeader = ({
   title,
@@ -20,9 +18,11 @@ const ScreenHeader = ({
   imgstyle,
   showGreenLine = true,
   style,
-    titlecolor="#090909"
+  titlecolor = Colors.textPrimary,
 }) => {
   const navigation = useNavigation();
+  // Headers drawn on a coloured background pass a white title
+  const onDark = titlecolor === 'white' || titlecolor === Colors.white;
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -34,13 +34,16 @@ const ScreenHeader = ({
 
   return (
     <>
-      <View style={[styles.header,style]}>
-        <TouchableOpacity onPress={handleBackPress}>
+      <View style={[styles.header, style]}>
+        <TouchableOpacity
+          onPress={handleBackPress}
+          activeOpacity={0.7}
+          hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+          style={[styles.backButton, onDark && styles.backButtonOnDark]}>
           <Image
             source={ImageConstant.BackArrow}
-            style={[styles.backArrow,imgstyle]}
+            style={[styles.backArrow, imgstyle]}
             resizeMode="contain"
-         
           />
         </TouchableOpacity>
         <View style={styles.logoContainer}>
@@ -53,9 +56,10 @@ const ScreenHeader = ({
           ) : (
             title && (
               <Typography
-                size={22}
-                type={Font.GeneralSans_Medium}
+                size={19}
+                type={Font.GeneralSans_Semibold}
                 color={titlecolor}
+                numberOfLines={1}
                 style={styles.headerTitle}>
                 {title}
               </Typography>
@@ -77,35 +81,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 14,
+    paddingBottom: 14,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadow.sm,
+  },
+  backButtonOnDark: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(255,255,255,0.35)',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   backArrow: {
-    width: 24,
-    height: 24,
-    tintColor: '#000000',
+    width: 18,
+    height: 18,
+    tintColor: Colors.textPrimary,
   },
   logoContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   headerTitle: {
     textAlign: 'center',
   },
   placeholder: {
-    width: 24,
+    width: 40,
   },
   logo: {
-    width: 72,
-    height: 30,
+    width: 80,
+    height: 32,
   },
   greenLine: {
-    width: width,
     height: 1,
-    backgroundColor: '#D1EDE3',
-    marginTop: 0,
-    marginBottom: 0,
+    backgroundColor: Colors.divider,
   },
 });
-

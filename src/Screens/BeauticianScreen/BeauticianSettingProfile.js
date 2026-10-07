@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
         left: 80,
     },
 
-    inputContainer: { marginBottom: 20 },
+    inputContainer: { marginBottom: 4 },
 
     errorText: {
         marginTop: 5,

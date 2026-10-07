@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     inputContainer: {
-        marginBottom: 20,
+        marginBottom: 4,
     },
     errorText: {
         color: 'red',

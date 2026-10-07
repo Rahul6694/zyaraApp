@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     View,
@@ -16,53 +16,66 @@ import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import SimpleToast from 'react-native-simple-toast';
+import { GET } from '../../Backend/Backend';
+import { SUBCATEGORIES } from '../../Backend/api_routes';
+import { addToCart } from '../../Backend/BookingAPI';
+import { getFirstImageUrl, formatPrice } from '../../Utils/imageUrl';
+
+const toList = value => {
+    if (Array.isArray(value)) {
+        return value;
+    }
+    try {
+        const parsed = JSON.parse(value || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+};
 
 const { width } = Dimensions.get('window');
-
-// Static Data for Service Details
-const defaultServiceData = {
-    id: 1,
-    name: 'Advanced Facial (Glow, Detan, Anti-aging)',
-    rating: 4.5,
-    duration: '1 hr 50 mins',
-    price: '999',
-    original_price: '1200',
-    discount: '20',
-    image: ImageConstant.girl,
-    description: 'Deep Cleansing helps remove dirt, oil, and impurities from pores, unclogs blackheads, and refreshes dull skin, leaving it smoother and glowing.',
-    suitsFor: [
-        'Basic Haircut',
-        'Layer Cut',
-        'Kids Haircut',
-        'Hair Styling',
-        'All Type',
-    ],
-    benefits: [
-        'Removes dirt, oil & Impurities from pores',
-        'Helps prevent acne & blackheads',
-        'Improves skin texture & smoothness',
-        'Restores natural glow & radiance',
-        'Boosts hydration & freshness',
-        'Promotes healthy, clear-looking skin',
-    ],
-};
 
 const ServiceDetails = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const serviceData = route?.params?.service || defaultServiceData;
+    const [service, setService] = useState(route?.params?.service || {});
+    const [adding, setAdding] = useState(false);
 
-    const [service, setService] = useState({
-        ...defaultServiceData,
-        ...serviceData,
-    });
+    // Refresh from the API so details are always current
+    useEffect(() => {
+        const id = route?.params?.service?.id || route?.params?.id;
+        if (!id) {
+            return;
+        }
+        GET(
+            `${SUBCATEGORIES}/${id}`,
+            res => res?.data && setService(prev => ({ ...prev, ...res.data })),
+            err => console.log('Service details error:', err),
+        );
+    }, [route?.params?.service?.id, route?.params?.id]);
+
+    const image = getFirstImageUrl(service.images);
+    const hasDiscount = Number(service.discount) > 0 && Number(service.discounted_price) > 0;
+    const suitsFor = toList(service.suits_for);
+    const benefits = toList(service.benefits);
 
     const handleCheckout = () => {
-        // Navigate to checkout or add to cart
-        navigation.navigate('SelectLocation', {
-            service: service,
-            cartItems: 1,
-        });
+        if (!service.id) {
+            return;
+        }
+        setAdding(true);
+        addToCart(
+            { sub_category_id: service.id, quantity: 1 },
+            () => {
+                setAdding(false);
+                navigation.navigate('SelectLocation');
+            },
+            err => {
+                setAdding(false);
+                SimpleToast.show(err?.data?.message || 'Could not add to cart', SimpleToast.SHORT);
+            },
+        );
     };
 
     return (
@@ -84,7 +97,7 @@ const ServiceDetails = () => {
                     {/* Hero Image */}
                     <View style={styles.heroImageContainer}>
                         <Image
-                            source={service.image || ImageConstant.girl}
+                            source={image ? { uri: image } : ImageConstant.girl}
                             style={styles.heroImage}
                             resizeMode="cover"
                         />
@@ -99,7 +112,7 @@ const ServiceDetails = () => {
                                 size={20}
                                 color="#000000"
                                 style={styles.serviceTitle}>
-                                {service.name || service.title || 'Service Name'}
+                                {service.name}
                             </Typography>
                             <View style={styles.ratingContainer}>
                                 <Typography
@@ -114,24 +127,22 @@ const ServiceDetails = () => {
                                     size={16}
                                     color="#000000"
                                     style={styles.rating}>
-                                    {service.rating || '4.5'}
+                                    {Number(service.rating || 0).toFixed(1)}
                                 </Typography>
                             </View>
                         </View>
 
                         {/* Duration */}
+                        {!!service.category_name && (
                         <View style={styles.durationContainer}>
-                            <Image 
-                                source={ImageConstant.clock} 
-                                style={styles.clockIcon} 
-                            />
                             <Typography
                                 type={Font.GeneralSans_Regular}
                                 size={16}
                                 color="#666666">
-                                {service.duration || service.service_duration || '1 hr 50 mins'}
+                                {service.category_name}
                             </Typography>
                         </View>
+                        )}
 
                         {/* Price Section */}
                         <View style={styles.priceSection}>
@@ -140,26 +151,24 @@ const ServiceDetails = () => {
                                 size={24}
                                 color="#000000"
                                 style={styles.price}>
-                                ₹{service.price || service.service_price || '999'}
+                                {formatPrice(hasDiscount ? service.discounted_price : service.price)}
                             </Typography>
-                            {service.original_price && (
+                            {hasDiscount && (
                                 <View style={styles.priceDetails}>
                                     <Typography
                                         type={Font.GeneralSans_Regular}
                                         size={18}
                                         color="#999999"
                                         style={styles.originalPrice}>
-                                        ₹{service.original_price}
+                                        {formatPrice(service.price)}
                                     </Typography>
-                                    {service.discount && (
-                                        <Typography
-                                            type={Font.GeneralSans_Medium}
-                                            size={16}
-                                            color="#FFBA6A"
-                                            style={styles.discount}>
-                                            {service.discount}% off
-                                        </Typography>
-                                    )}
+                                    <Typography
+                                        type={Font.GeneralSans_Medium}
+                                        size={16}
+                                        color="#FFBA6A"
+                                        style={styles.discount}>
+                                        {Math.round(Number(service.discount))}% off
+                                    </Typography>
                                 </View>
                             )}
                         </View>
@@ -171,11 +180,12 @@ const ServiceDetails = () => {
                                 size={16}
                                 color="#666666"
                                 style={styles.description}>
-                                {service.description || defaultServiceData.description}
+                                {service.description}
                             </Typography>
                         </View>
 
                         {/* Suits For Section */}
+                        {suitsFor.length > 0 && (
                         <View style={styles.section}>
                             <Typography
                                 type={Font.GeneralSans_Semibold}
@@ -185,7 +195,7 @@ const ServiceDetails = () => {
                                 Suits for:
                             </Typography>
                             <View style={styles.listContainer}>
-                                {service.suitsFor?.map((item, index) => (
+                                {suitsFor.map((item, index) => (
                                     <View key={index} style={styles.listItem}>
                                         <View style={styles.checkmark}>
                                             <Typography
@@ -206,8 +216,10 @@ const ServiceDetails = () => {
                                 ))}
                             </View>
                         </View>
+                        )}
 
                         {/* Benefits Section */}
+                        {benefits.length > 0 && (
                         <View style={styles.section}>
                             <Typography
                                 type={Font.GeneralSans_Semibold}
@@ -217,7 +229,7 @@ const ServiceDetails = () => {
                                 Benefits:
                             </Typography>
                             <View style={styles.listContainer}>
-                                {service.benefits?.map((item, index) => (
+                                {benefits.map((item, index) => (
                                     <View key={index} style={styles.listItem}>
                                         <View style={styles.checkmark}>
                                             <Typography
@@ -238,6 +250,7 @@ const ServiceDetails = () => {
                                 ))}
                             </View>
                         </View>
+                        )}
                     </View>
                 </ScrollView>
 
@@ -245,6 +258,7 @@ const ServiceDetails = () => {
                     <Button
                         title="CHECKOUT"
                         onPress={handleCheckout}
+                        loader={adding}
                         style={styles.checkoutButton}
                         linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                         title_style={styles.buttonText}

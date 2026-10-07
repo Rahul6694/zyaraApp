@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     StyleSheet,
     View,
@@ -6,6 +6,7 @@ import {
     Dimensions,
     TouchableOpacity,
     Image,
+    ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors } from '../../Constants/Colors';
@@ -16,77 +17,93 @@ import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
 import DropdownNew from '../../Component/DropdownNew';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import SimpleToast from 'react-native-simple-toast';
+import { getCart, updateCartItem } from '../../Backend/BookingAPI';
+import { formatPrice } from '../../Utils/imageUrl';
 
 const { width } = Dimensions.get('window');
+
+const personOptions = [1, 2, 3, 4, 5].map(n => ({
+    label: `${n} ${n === 1 ? 'person' : 'persons'}`,
+    value: n,
+}));
 
 const AddToCart = () => {
     const navigation = useNavigation();
 
-    // Cart items state
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 1,
-            name: 'Chocolate Facial',
-            price: 999,
-            originalPrice: 500,
-            duration: '1 hr 50 mins',
-            quantity: 1,
-        },
-        {
-            id: 2,
-            name: 'Deep Cleansing Facial',
-            price: 999,
-            originalPrice: 500,
-            duration: '1 hr 50 mins',
-            quantity: 1,
-            description: '9 Steps Facial | Includes Free Silicone Facial Brush',
-        },
-    ]);
+    const [cartItems, setCartItems] = useState([]);
+    const [summary, setSummary] = useState(null);
+    const [totalItems, setTotalItems] = useState(0);
+    const [numberOfPeople, setNumberOfPeople] = useState(1);
+    const [forSomeoneElse, setForSomeoneElse] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [updatingId, setUpdatingId] = useState(null);
 
-    const [serviceChargesPerson, setServiceChargesPerson] = useState('1 person');
-    const [productCostPerson, setProductCostPerson] = useState('1 person');
+    const applyCart = data => {
+        setCartItems(data?.items || []);
+        setSummary(data?.summary || null);
+        setTotalItems(data?.total_items || 0);
+    };
 
-    const personOptions = [
-        { label: '1 person', value: '1 person' },
-        { label: '2 persons', value: '2 persons' },
-        { label: '3 persons', value: '3 persons' },
-        { label: '4 persons', value: '4 persons' },
-    ];
+    const loadCart = useCallback((people = numberOfPeople) => {
+        getCart(
+            people,
+            res => {
+                applyCart(res?.data);
+                setLoading(false);
+            },
+            err => {
+                console.log('Cart error:', err);
+                setLoading(false);
+            },
+        );
+    }, [numberOfPeople]);
 
-    // Calculate totals
-    const serviceCharges = 450;
-    const productCost = 799;
-    const subTotal = serviceCharges + productCost;
-    const taxAndFees = 49;
-    const offerDiscount = 49;
-    const total = subTotal + taxAndFees - offerDiscount;
-    const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    useFocusEffect(
+        useCallback(() => {
+            loadCart();
+        }, [loadCart]),
+    );
 
-    const handleQuantityChange = (itemId, change) => {
-        setCartItems(prevItems =>
-            prevItems.map(item => {
-                if (item.id === itemId) {
-                    const newQuantity = Math.max(1, item.quantity + change);
-                    return { ...item, quantity: newQuantity };
-                }
-                return item;
-            })
+    const handlePeopleChange = value => {
+        setNumberOfPeople(value);
+        loadCart(value);
+    };
+
+    // Quantity 0 removes the item on the server
+    const handleQuantityChange = (item, change) => {
+        const quantity = Math.max(0, item.quantity + change);
+        setUpdatingId(item.id);
+        updateCartItem(
+            item.id,
+            quantity,
+            () => {
+                setUpdatingId(null);
+                loadCart();
+            },
+            err => {
+                setUpdatingId(null);
+                SimpleToast.show(err?.data?.message || 'Could not update cart', SimpleToast.SHORT);
+            },
         );
     };
 
     const handleCheckout = () => {
         navigation.navigate('SlotBooking', {
-            cartItems: cartItems,
-            total: total,
+            numberOfPeople,
+            forSomeoneElse,
+            total: summary?.total_amount,
         });
     };
 
     const handleBookingForSomeoneElse = () => {
-        console.log('Booking for someone else');
+        setForSomeoneElse(prev => !prev);
     };
 
-    const renderCartItem = (item, index) => (
+    const renderCartItem = (item) => {
+        const hasDiscount = Number(item.original_price) > Number(item.price);
+        return (
         <View key={item.id} style={styles.cartItem}>
             <View style={styles.cartItemContent}>
                 {/* Item Name */}
@@ -98,29 +115,15 @@ const AddToCart = () => {
                     {item.name}
                 </Typography>
 
-                {/* Description for second item */}
-                {item.description && (
+                {!!item.description && (
                     <View style={styles.descriptionContainer}>
                         <Typography
                             type={Font.GeneralSans_Regular}
-                            size={15}
+                            size={14}
                             color="#4D4D4D"
+                            numberOfLines={2}
                             style={styles.descriptionText}>
-                            9 Steps Facial
-                        </Typography>
-                        <Typography
-                            type={Font.GeneralSans_Regular}
-                            size={15}
-                            color="#4D4D4D"
-                            style={styles.descriptionText}>
-                            Includes Free
-                        </Typography>
-                        <Typography
-                            type={Font.GeneralSans_Regular}
-                            size={15}
-                            color="#4D4D4D"
-                            style={styles.descriptionText}>
-                            Silicone Facial Brush
+                            {item.description}
                         </Typography>
                     </View>
                 )}
@@ -133,19 +136,20 @@ const AddToCart = () => {
                                 type={Font.GeneralSans_Medium}
                                 size={16}
                                 color="#262626">
-                                ₹{item.price}
+                                {formatPrice(item.price)}
                             </Typography>
-                            {item.originalPrice && (
+                            {hasDiscount && (
                                 <Typography
                                     type={Font.GeneralSans_Regular}
                                     size={15}
                                     color="#8C8C8C"
                                     style={styles.originalPrice}>
-                                    ₹{item.originalPrice}
+                                    {formatPrice(item.original_price)}
                                 </Typography>
                             )}
                         </View>
 
+                        {!!item.duration && (
                         <View style={styles.durationContainer}>
                             <Image
                                 source={ImageConstant.clock}
@@ -156,99 +160,61 @@ const AddToCart = () => {
                                 type={Font.GeneralSans_Regular}
                                 size={15}
                                 color="#090909">
-                                {item.duration}
+                                {item.duration} mins
                             </Typography>
                         </View>
+                        )}
                     </View>
 
                     {/* Quantity Selector */}
                     <View style={styles.quantitySelector}>
                         <TouchableOpacity
-                            onPress={() => handleQuantityChange(item.id, -1)}
+                            disabled={updatingId === item.id}
+                            onPress={() => handleQuantityChange(item, -1)}
                             style={styles.quantityButtonMinus}>
                             <View style={styles.minusLine} />
                         </TouchableOpacity>
                         <View style={styles.quantityValue}>
-                            <Typography
-                                type={Font.GeneralSans_Medium}
-                                size={16}
-                                color="#000000">
-                                {String(item.quantity).padStart(2, '0')}
-                            </Typography>
+                            {updatingId === item.id ? (
+                                <ActivityIndicator size="small" color="#00B272" />
+                            ) : (
+                                <Typography
+                                    type={Font.GeneralSans_Medium}
+                                    size={16}
+                                    color="#000000">
+                                    {String(item.quantity).padStart(2, '0')}
+                                </Typography>
+                            )}
                         </View>
                         <TouchableOpacity
-                            onPress={() => handleQuantityChange(item.id, 1)}
+                            disabled={updatingId === item.id}
+                            onPress={() => handleQuantityChange(item, 1)}
                             style={styles.quantityButtonPlus}>
                             <View style={styles.plusLineHorizontal} />
                             <View style={styles.plusLineVertical} />
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                {/* Service Charges and Product Cost inside second item */}
-                {index === 1 && (
-                    <>
-                        <View style={styles.dashedDivider} />
-                        <View style={styles.chargesRow}>
-                            <View style={styles.chargesLabel}>
-                                <Typography
-                                    type={Font.GeneralSans_Regular}
-                                    size={15}
-                                    color="#111111">
-                                    Service Charges
-                                </Typography>
-                            </View>
-                            <View style={styles.chargesRight}>
-                               
-                                <Typography
-                                    type={Font.GeneralSans_Semibold}
-                                    size={16}
-                                    color="#262626"
-                                    style={styles.chargeAmount}>
-                                    ₹{serviceCharges}
-                                </Typography>
-                                <DropdownNew
-                                    MainBoxStyle={styles.personDropdown}
-                                    data={personOptions}
-                                    value={serviceChargesPerson}
-                                    onChange={(item) => setServiceChargesPerson(item.value)}
-                                    style_dropdown={styles.dropdownStyle}
-                                    placeholder=""
-                                />
-                            </View>
-                        </View>
-                        <View style={styles.chargesRow}>
-                            <View style={styles.chargesLabel}>
-                                <Typography
-                                    type={Font.GeneralSans_Regular}
-                                    size={15}
-                                    color="#111111">
-                                    Product Cost
-                                </Typography>
-                            </View>
-                            <View style={styles.chargesRight}>
-                             
-                                <Typography
-                                    type={Font.GeneralSans_Semibold}
-                                    size={16}
-                                    color="#262626"
-                                    style={styles.chargeAmount}>
-                                    ₹{productCost}
-                                </Typography>
-
-                                <DropdownNew
-                                    MainBoxStyle={styles.personDropdown}
-                                    data={personOptions}
-                                    value={productCostPerson}
-                                    onChange={(item) => setProductCostPerson(item.value)}
-                                    style_dropdown={styles.dropdownStyle}
-                                    placeholder=""
-                                />
-                            </View>
-                        </View>
-                    </>
-                )}
             </View>
+        </View>
+        );
+    };
+
+    const summaryRow = (label, value) => (
+        <View style={styles.summaryRow}>
+            <Typography
+                type={Font.GeneralSans_Regular}
+                size={16}
+                color="#1C1C1C">
+                {label}
+            </Typography>
+            <Typography
+                type={Font.GeneralSans_Semibold}
+                size={16}
+                color="#262626"
+                style={styles.summaryAmount}>
+                {value}
+            </Typography>
         </View>
     );
 
@@ -267,6 +233,29 @@ const AddToCart = () => {
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}>
+                    {loading ? (
+                        <ActivityIndicator color="#00B272" size="large" style={{ marginTop: 60 }} />
+                    ) : cartItems.length === 0 ? (
+                        <View style={styles.emptyCart}>
+                            <Typography type={Font.GeneralSans_Semibold} size={20} color="#1C1C1C">
+                                Your cart is empty
+                            </Typography>
+                            <Typography
+                                type={Font.GeneralSans_Regular}
+                                size={15}
+                                color={Colors.textSecondary}
+                                style={styles.emptyText}>
+                                Add a service to book a beautician at your home.
+                            </Typography>
+                            <Button
+                                title="BROWSE SERVICES"
+                                onPress={() => navigation.navigate('Categories')}
+                                style={styles.button}
+                                linerColor={['#00B272', '#00B272']}
+                                title_style={styles.buttonText}
+                            />
+                        </View>
+                    ) : (
                     <View style={styles.content}>
                         {/* Booking for someone else */}
                         <View style={styles.bookingSection}>
@@ -275,7 +264,7 @@ const AddToCart = () => {
                                 size={16}
                                 color="#000000"
                                 style={styles.bookingText}>
-                                Booking for someone else?
+                                {forSomeoneElse ? "You'll enter their details next" : 'Booking for someone else?'}
                             </Typography>
                             <TouchableOpacity
                                 onPress={handleBookingForSomeoneElse}
@@ -284,70 +273,52 @@ const AddToCart = () => {
                                     type={Font.GeneralSans_Medium}
                                     size={18}
                                     color="#00B272">
-                                    ADD
+                                    {forSomeoneElse ? 'REMOVE' : 'ADD'}
                                 </Typography>
                             </TouchableOpacity>
                         </View>
 
                         {/* Cart Items */}
                         <View style={styles.cartItemsContainer}>
-                            {cartItems.map((item, index) => renderCartItem(item, index))}
+                            {cartItems.map(renderCartItem)}
+                        </View>
+
+                        {/* Number of people */}
+                        <View style={styles.chargesRow}>
+                            <View style={styles.chargesLabel}>
+                                <Typography
+                                    type={Font.GeneralSans_Regular}
+                                    size={15}
+                                    color="#111111">
+                                    Number of people
+                                </Typography>
+                            </View>
+                            <View style={styles.chargesRight}>
+                                <DropdownNew
+                                    MainBoxStyle={styles.personDropdown}
+                                    marginHorizontal={0}
+                                    size={35}
+                                    data={personOptions}
+                                    value={numberOfPeople}
+                                    onChange={(item) => handlePeopleChange(item.value)}
+                                    style_dropdown={styles.dropdownStyle}
+                                    placeholder=""
+                                />
+                            </View>
                         </View>
 
                         {/* Summary Section */}
                         <View style={styles.summarySection}>
                             <View style={styles.summaryDivider} />
-                            
-                            {/* Sub Total */}
-                            <View style={styles.summaryRow}>
-                                <Typography
-                                    type={Font.GeneralSans_Regular}
-                                    size={16}
-                                    color="#1C1C1C">
-                                    Sub Total
-                                </Typography>
-                                <Typography
-                                    type={Font.GeneralSans_Semibold}
-                                    size={16}
-                                    color="#262626"
-                                    style={styles.summaryAmount}>
-                                    ₹{subTotal.toFixed(2)}
-                                </Typography>
-                            </View>
 
-                            {/* Tax and Fees */}
-                            <View style={styles.summaryRow}>
-                                <Typography
-                                    type={Font.GeneralSans_Regular}
-                                    size={16}
-                                    color="#1C1C1C">
-                                    Tax and Fees
-                                </Typography>
-                                <Typography
-                                    type={Font.GeneralSans_Semibold}
-                                    size={16}
-                                    color="#262626"
-                                    style={styles.summaryAmount}>
-                                    ₹{taxAndFees.toFixed(2)}
-                                </Typography>
-                            </View>
-
-                            {/* Offer & Discount */}
-                            <View style={styles.summaryRow}>
-                                <Typography
-                                    type={Font.GeneralSans_Regular}
-                                    size={16}
-                                    color="#1C1C1C">
-                                    Offer & Discount
-                                </Typography>
-                                <Typography
-                                    type={Font.GeneralSans_Semibold}
-                                    size={16}
-                                    color="#262626"
-                                    style={styles.summaryAmount}>
-                                    ₹{offerDiscount.toFixed(2)}
-                                </Typography>
-                            </View>
+                            {summaryRow(
+                                numberOfPeople > 1 ? `Sub Total (× ${numberOfPeople} people)` : 'Sub Total',
+                                formatPrice(summary?.subtotal || 0),
+                            )}
+                            {summaryRow('Tax', formatPrice(summary?.tax_amount || 0))}
+                            {summaryRow('Platform Fee', formatPrice(summary?.platform_fee || 0))}
+                            {Number(summary?.discount_amount) > 0 &&
+                                summaryRow('Offer & Discount', `−${formatPrice(summary.discount_amount)}`)}
 
                             {/* Total */}
                             <View style={styles.totalRow}>
@@ -363,14 +334,14 @@ const AddToCart = () => {
                                         size={16}
                                         color="#000000"
                                         style={styles.itemsCount}>
-                                        ({totalItems} items)
+                                        ({totalItems} {totalItems === 1 ? 'item' : 'items'})
                                     </Typography>
                                 </View>
                                 <Typography
                                     type={Font.GeneralSans_Semibold}
                                     size={20}
                                     color="#262626">
-                                    ₹{total.toFixed(2)}
+                                    {formatPrice(summary?.total_amount || 0)}
                                 </Typography>
                             </View>
                         </View>
@@ -384,6 +355,7 @@ const AddToCart = () => {
                             title_style={styles.buttonText}
                         />
                     </View>
+                    )}
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -394,6 +366,16 @@ const AddToCart = () => {
 export default AddToCart;
 
 const styles = StyleSheet.create({
+    emptyCart: {
+        alignItems: 'center',
+        paddingHorizontal: 22,
+        paddingTop: 60,
+    },
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 8,
+        marginBottom: 16,
+    },
     safeArea: {
         flex: 1,
         backgroundColor: 'transparent',
@@ -577,12 +559,12 @@ const styles = StyleSheet.create({
     
     },
     personDropdown: {
-        width: 100,
-        height: 35,
+        width: 130,
+        marginVertical: 0,
     },
     dropdownStyle: {
         height: 35,
-        width:130,
+        width: '100%',
         borderRadius: 6,
         borderWidth: 1,
         borderColor: '#00B272',

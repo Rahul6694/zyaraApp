@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -33,6 +33,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 const CELL_COUNT = 4;
+const CELL_GAP = 14;
+// Boxes span exactly the button width (screen minus 22px padding each side)
+const CELL_SIZE = Math.min((width - 44 - CELL_GAP * (CELL_COUNT - 1)) / CELL_COUNT, 72);
+const RESEND_SECONDS = 30;
 
 const OTPVerify = () => {
   const navigation = useNavigation();
@@ -47,7 +51,18 @@ const OTPVerify = () => {
   const [otpError, setOtpError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  const displayPhone = String(phoneNumber).startsWith('+') ? phoneNumber : `+91 ${phoneNumber}`;
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
+
+  // Countdown before the code can be resent
+  useEffect(() => {
+    if (secondsLeft <= 0) {
+      return;
+    }
+    const timer = setTimeout(() => setSecondsLeft(s => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [secondsLeft]);
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
     setValue,
@@ -140,6 +155,7 @@ const OTPVerify = () => {
         requestData,
         (response) => {
           setResending(false);
+          setSecondsLeft(RESEND_SECONDS);
           console.log('OTP resent successfully:', response);
           SimpleToast.show('OTP resent successfully', SimpleToast.SHORT);
         },
@@ -160,6 +176,7 @@ const OTPVerify = () => {
         requestData,
         (response) => {
           setResending(false);
+          setSecondsLeft(RESEND_SECONDS);
           console.log('OTP resent successfully:', response);
           SimpleToast.show('OTP resent successfully', SimpleToast.SHORT);
         },
@@ -203,28 +220,22 @@ const OTPVerify = () => {
             {/* Content */}
             <View style={styles.content}>
               <Typography
-                size={35}
+                size={32}
                 type={Font.GeneralSans_Bold}
-                color="#00210B"
+                color={Colors.textPrimary}
                 style={styles.title}>
                 OTP Verify
               </Typography>
 
               <Typography
-                size={20}
-                type={Font.GeneralSans_Regular}
-                color="#383838"
-                style={styles.subtitle}>
-                Please enter {CELL_COUNT} digit code sent to you at {phoneNumber}
-              </Typography>
-
-              {/* OTP Label */}
-              <Typography
                 size={16}
                 type={Font.GeneralSans_Regular}
-                color="#282727"
-                style={styles.otpLabel}>
-                OTP
+                color={Colors.textSecondary}
+                style={styles.subtitle}>
+                Please enter the {CELL_COUNT} digit code sent to{'\n'}
+                <Typography size={16} type={Font.GeneralSans_Semibold} color={Colors.textPrimary}>
+                  {displayPhone}
+                </Typography>
               </Typography>
 
               {/* OTP Input */}
@@ -238,30 +249,32 @@ const OTPVerify = () => {
                   rootStyle={styles.codeFieldRoot}
                   keyboardType="number-pad"
                   textContentType="oneTimeCode"
+                  autoFocus
                   renderCell={({ index, symbol, isFocused }) => (
                     <View
                       key={index}
                       style={[
                         styles.cell,
+                        symbol && styles.filledCell,
                         isFocused && styles.focusCell,
+                        !!otpError && styles.errorCell,
                       ]}
                       onLayout={getCellOnLayoutHandler(index)}>
                       <Typography
-                        size={24}
-                        type={Font.GeneralSans_Medium}
-                        color={Colors.black}
+                        size={26}
+                        type={Font.GeneralSans_Semibold}
+                        color={Colors.textPrimary}
                         style={styles.cellText}>
                         {symbol || (isFocused ? <Cursor /> : null)}
                       </Typography>
                     </View>
                   )}
                 />
-                {otpError && (
+                {!!otpError && (
                   <Typography
-                    size={12}
-
-                    type={Font.GeneralSans_Regular}
-                    color={Colors.red}
+                    size={13}
+                    type={Font.GeneralSans_Medium}
+                    color={Colors.danger}
                     style={styles.errorText}>
                     {otpError}
                   </Typography>
@@ -269,30 +282,31 @@ const OTPVerify = () => {
               </View>
 
               <Button
-                title={loading ? "VERIFYING..." : "SUBMIT"}
+                title="Verify"
                 onPress={handleSubmit}
                 style={styles.button}
-                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                 title_style={styles.buttonText}
-                disabled={loading}
+                loader={loading}
               />
             </View>
           </ScrollView>
           <View style={styles.linksContainer}>
-            <TouchableOpacity onPress={handleResend} disabled={resending}>
+            <TouchableOpacity onPress={handleResend} disabled={resending || secondsLeft > 0}>
               <Typography
-                size={16}
+                size={15}
                 type={Font.GeneralSans_Regular}
-                color={resending ? Colors.gray : Colors.black}
+                color={Colors.textSecondary}
                 style={styles.linkText}>
                 {resending ? 'Resending...' : (
                   <>
-                    Didn't get the code{' '}
+                    Didn't get the code?{' '}
                     <Typography
-                      size={16}
+                      size={15}
                       type={Font.GeneralSans_Semibold}
-                      color={Colors.zyaraGreen}>
-                      Resend Code
+                      color={secondsLeft > 0 ? Colors.textMuted : Colors.zyaraGreen}>
+                      {secondsLeft > 0
+                        ? `Resend in 0:${String(secondsLeft).padStart(2, '0')}`
+                        : 'Resend Code'}
                     </Typography>
                   </>
                 )}
@@ -345,54 +359,53 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    marginBottom: 15,
-
-  },
-  otpLabel: {
-    marginTop: 20
+    marginBottom: 10,
   },
   subtitle: {
-    marginBottom: 20,
-
+    lineHeight: 24,
+    marginBottom: 32,
   },
   otpContainer: {
-    marginBottom: 20,
-    alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 12,
+  },
+  codeFieldRoot: {
+    width: '100%',
+    justifyContent: 'space-between',
   },
   cell: {
-    width: '22%',
-    height: 70,
+    width: CELL_SIZE,
+    height: CELL_SIZE,
     borderWidth: 1,
-    borderColor: '#DDDDDD',
-    borderRadius: 12,
+    borderColor: Colors.border,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 8,
     backgroundColor: Colors.white,
-
+  },
+  filledCell: {
+    borderColor: Colors.zyaraGreen,
+    backgroundColor: Colors.brandTint,
   },
   focusCell: {
     borderColor: Colors.zyaraGreen,
     borderWidth: 2,
+  },
+  errorCell: {
+    borderColor: Colors.danger,
+    backgroundColor: Colors.dangerSoft,
   },
   cellText: {
     textAlign: 'center',
   },
   errorText: {
     marginTop: 10,
-    textAlign: 'right'
   },
   button: {
     width: width - 44,
-    height: 60,
-    marginVertical: 20,
-    borderRadius: 12,
+    marginVertical: 12,
   },
   buttonText: {
-    fontSize: 18,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   linksContainer: {
     alignItems: 'center',

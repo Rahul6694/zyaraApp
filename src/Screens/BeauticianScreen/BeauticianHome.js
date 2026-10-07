@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Image, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, View, ScrollView, Image, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import SimpleToast from 'react-native-simple-toast';
+import {
+  getBeauticianDashboard,
+  setBeauticianOnlineStatus,
+  requestBeauticianPayout,
+} from '../../Backend/BookingAPI';
+import { getImageUrl, formatPrice } from '../../Utils/imageUrl';
 import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Typography from '../../Component/UI/Typography';
@@ -7,14 +15,15 @@ import { ImageConstant } from '../../Constants/ImageConstant';
 import CustomSwitch from '../../Component/CustomSwitch'
 import { Font } from '../../Constants/Font';
 // Reusable StatCard Component
-const StatCard = ({ icon, value, styleheight, label, gradientColors, fullWidth, WithdrawButton, colorss, show }) => (
+const StatCard = ({ icon, value, styleheight, label, gradientColors, fullWidth, WithdrawButton, colorss, show, onPress, onWithdraw }) => (
+  <TouchableOpacity activeOpacity={onPress ? 0.85 : 1} disabled={!onPress} onPress={onPress} style={fullWidth ? null : { flex: 0.48 }}>
   <LinearGradient
     colors={gradientColors}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 1 }}
     style={[
       styles.gradientBorder,
-      fullWidth ? styles.gradientBorderFull : null
+      fullWidth ? styles.gradientBorderFull : { borderRadius: 20, padding: 1 }
     ]}
   >
     <View style={[styles.innerBox, styleheight]}>
@@ -53,17 +62,87 @@ const StatCard = ({ icon, value, styleheight, label, gradientColors, fullWidth, 
       </View>
 
       {WithdrawButton && (
-        <View style={styles.withdrawBtn}>
+        <TouchableOpacity style={styles.withdrawBtn} onPress={onWithdraw}>
           <Typography size={16} color="#00B272">WITHDRAW EARNINGS</Typography>
-        </View>
+        </TouchableOpacity>
       )}
     </View>
   </LinearGradient>
+  </TouchableOpacity>
 );
+
+const greeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning!';
+  if (hour < 17) return 'Good Afternoon!';
+  return 'Good Evening!';
+};
 
 
 const BeauticianHome = () => {
+  const navigation = useNavigation();
   const [enabled, setEnabled] = useState(false);
+  const [dashboard, setDashboard] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = useCallback((onDone) => {
+    getBeauticianDashboard(
+      res => {
+        setDashboard(res?.data || null);
+        setEnabled(!!res?.data?.profile?.is_online);
+        onDone && onDone();
+      },
+      err => {
+        console.log('Dashboard error:', err);
+        onDone && onDone();
+      },
+    );
+  }, []);
+
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const profile = dashboard?.profile || {};
+  const stats = dashboard?.stats || {};
+  const earnings = dashboard?.earnings || {};
+  const photo = getImageUrl(profile.profile_picture);
+
+  const toggleOnline = val => {
+    setEnabled(val);
+    setBeauticianOnlineStatus(
+      val,
+      res => SimpleToast.show(res?.message || (val ? 'You are online' : 'You are offline'), SimpleToast.SHORT),
+      err => {
+        setEnabled(!val);
+        SimpleToast.show(err?.data?.message || 'Could not update status', SimpleToast.SHORT);
+      },
+    );
+  };
+
+  const handleWithdraw = () => {
+    const balance = Number(earnings.available_balance || 0);
+    if (balance <= 0) {
+      SimpleToast.show('No balance available to withdraw yet', SimpleToast.SHORT);
+      return;
+    }
+    Alert.alert('Withdraw earnings', `Request a withdrawal of ${formatPrice(balance)} to your bank account?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Withdraw',
+        onPress: () =>
+          requestBeauticianPayout(
+            null,
+            res => {
+              SimpleToast.show(res?.message || 'Withdrawal requested', SimpleToast.SHORT);
+              load();
+            },
+            err => SimpleToast.show(err?.data?.message || 'Could not request withdrawal', SimpleToast.LONG),
+          ),
+      },
+    ]);
+  };
+
+  const openBookings = () => navigation.navigate('My Booking');
+
   return (
     <LinearGradient
       colors={['#EFFFF4', '#FFFFFF']}
@@ -72,25 +151,39 @@ const BeauticianHome = () => {
       style={{ flex: 1, paddingHorizontal: 20 }}
     >
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false} >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              colors={['#00B272']}
+              onRefresh={() => {
+                setRefreshing(true);
+                load(() => setRefreshing(false));
+              }}
+            />
+          }>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 10 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={ImageConstant.user2} style={{ height: 40, width: 40, resizeMode: 'cover', borderRadius: 10, marginRight: 10 }} />
-              <View>
-                <Typography size={16} color='#000000' type={Font.GeneralSans_Medium}>
-                  Shreya Sharma  </Typography>
-                <Typography>
-                  <Image source={ImageConstant.Location} style={{ height: 10, width: 10, resizeMode: 'contain' }} /> Surat, Gujrat
+              <Image source={photo ? { uri: photo } : ImageConstant.user2} style={{ height: 40, width: 40, resizeMode: 'cover', borderRadius: 10, marginRight: 10 }} />
+              <View style={{ maxWidth: 170 }}>
+                <Typography size={16} color='#000000' type={Font.GeneralSans_Medium} numberOfLines={1}>
+                  {profile.name || ' '}
                 </Typography>
+                {!!(profile.city || profile.state) && (
+                  <Typography numberOfLines={1}>
+                    <Image source={ImageConstant.Location} style={{ height: 10, width: 10, resizeMode: 'contain' }} /> {[profile.city, profile.state].filter(Boolean).join(', ')}
+                  </Typography>
+                )}
               </View>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '30%', alignItems: 'center' }}>
               <Typography size={14} type={Font.GeneralSans_Regular} color='#000911'>
-                Online
+                {enabled ? 'Online' : 'Offline'}
               </Typography>
               <CustomSwitch
                 value={enabled}
-                onValueChange={(val) => setEnabled(val)}
+                onValueChange={toggleOnline}
               />
               <View>
                 <Image source={ImageConstant.notification} style={{ height: 30, width: 22, resizeMode: 'contain' }} />
@@ -103,17 +196,36 @@ const BeauticianHome = () => {
                 Dashboard
               </Typography>
               <Typography>
-                Good Morning!
+                {greeting()}
               </Typography>
             </View>
-            <TouchableOpacity style={{ height: 45, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00B272', borderRadius: 12, paddingHorizontal: 15 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('AddService')}
+              style={{ height: 45, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00B272', borderRadius: 12, paddingHorizontal: 15 }}>
               <Typography color='#00B272'>+ Add Service</Typography>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('BeauticianGallery')}
+              style={{ height: 45, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00B272', borderRadius: 12, paddingHorizontal: 15, marginLeft: 8 }}>
+              <Typography color='#00B272'>Gallery</Typography>
+            </TouchableOpacity>
+            </View>
           </View>
+          {profile.verification_status && profile.verification_status !== 'approved' && (
+            <View style={styles.notice}>
+              <Typography size={14} type={Font.GeneralSans_Medium} color={profile.verification_status === 'rejected' ? '#E5484D' : '#B7730C'}>
+                {profile.verification_status === 'rejected'
+                  ? 'Your profile verification was rejected. Please contact support.'
+                  : 'Your profile is under review. Customers will see you once it is approved.'}
+              </Typography>
+            </View>
+          )}
           <StatCard
             icon={ImageConstant.usercalander}
-            value="20"
+            value={String(stats.today_bookings ?? 0)}
             show
+            onPress={openBookings}
             label="Today’s Appointments"
             gradientColors={['#F6F9E3', '#00B272']}
             fullWidth
@@ -123,7 +235,8 @@ const BeauticianHome = () => {
           <View style={styles.row}>
             <StatCard
               show
-              value="20"
+              onPress={openBookings}
+              value={String(stats.pending_requests ?? 0)}
               label={
                 <>
                   Pending{"\n"}
@@ -134,7 +247,7 @@ const BeauticianHome = () => {
               colorss={'#eefafaff'}
             />
             <StatCard
-              value="₹749"
+              value={formatPrice(stats.today_earnings || 0)}
               label={<>Revenue{"\n"}Today</>}
               gradientColors={['#F6F9E3', '#C4DE00']}
               colorss='#e8ffe7ff'
@@ -143,8 +256,9 @@ const BeauticianHome = () => {
           </View>     
           <StatCard
             icon={ImageConstant.calander3}
-            value="20"
-            label="Today’s Appointments"
+            value={String(stats.upcoming_bookings ?? 0)}
+            onPress={openBookings}
+            label="Upcoming Bookings"
             gradientColors={['#F6F9E3', '#00B272']}
             fullWidth
             show
@@ -153,11 +267,12 @@ const BeauticianHome = () => {
           />
           <StatCard
             icon={ImageConstant.homePay}
-            value="₹5000"
-            label="Total Earnings"
+            value={formatPrice(earnings.total_earnings || 0)}
+            label={`Total Earnings · ${formatPrice(earnings.available_balance || 0)} available`}
             gradientColors={['#F6F9E3', '#FFBA6A']}
             fullWidth
             WithdrawButton
+            onWithdraw={handleWithdraw}
             styleheight={{ height: 186 }}
           />
         </ScrollView>
@@ -169,13 +284,18 @@ const BeauticianHome = () => {
 export default BeauticianHome;
 
 const styles = StyleSheet.create({
+  notice: {
+    backgroundColor: '#FEF5E6',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
   },
   gradientBorder: {
-    flex: 0.48,
     borderRadius: 20,
     padding: 1,
   },

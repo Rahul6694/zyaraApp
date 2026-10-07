@@ -132,42 +132,41 @@ const SignIn = () => {
             {/* Content */}
             <View style={styles.content}>
               <Typography
-                size={35}
+                size={32}
                 type={Font.GeneralSans_Bold}
-                color="#00210B"
+                color={Colors.textPrimary}
                 style={styles.title}>
                 Get started
               </Typography>
 
               <Typography
-                size={20}
+                size={16}
                 type={Font.GeneralSans_Regular}
-                color="#383838"
+                color={Colors.textSecondary}
+                lineHeight={22}
                 style={styles.subtitle}>
-               Enter your Phone number to correct..
+                Enter your phone number to continue. We'll send you a one-time code.
               </Typography>
 
               <View style={styles.inputContainer}>
                 <Input
                   title="Phone Number"
-                  placeholder="phone number"
+                  placeholder="10-digit mobile number"
                   value={phoneNumber}
                   onChange={handlePhoneChange}
                   keyboardType="phone-pad"
                   showTitle={true}
-                  placeholderTextColor="rgba(0, 0, 0, 0.5)"
                   error={phoneError}
                   maxLength={10}
                 />
               </View>
 
               <Button
-                title={loading ? "SENDING..." : "SEND OTP"}
+                title="Send OTP"
                 onPress={handleSendOTP}
                 style={styles.button}
-                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                 title_style={styles.buttonText}
-                disabled={loading}
+                loader={loading}
               />
 
 
@@ -245,14 +244,13 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    marginBottom: 10,
+    marginBottom: 8,
   },
   subtitle: {
-    marginBottom: 30,
-    letterSpacing: 0.02,
+    marginBottom: 28,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 4,
   },
   inputStyle: {
     width: width - 44,
@@ -271,14 +269,10 @@ const styles = StyleSheet.create({
   },
   button: {
     width: width - 44,
-    height: 60,
-    marginVertical: 20,
-    borderRadius: 12,
+    marginVertical: 12,
   },
   buttonText: {
-    fontSize: 18,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   dividerContainer: {
     flexDirection: 'row',

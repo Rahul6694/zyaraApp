@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.02,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 4,
   },
   uploadSection: {
     marginBottom: 25,

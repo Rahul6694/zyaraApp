@@ -17,6 +17,7 @@ import { customerLogout } from "../../Backend/CustomerAPI";
 import SimpleToast from "react-native-simple-toast";
 import { BASE_URL } from "../../Backend/env";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Colors, Shadow } from "../../Constants/Colors";
 
 const MyProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -64,7 +65,7 @@ const MyProfileScreen = ({ navigation }) => {
   return (
     <View style={[styles.container, {paddingTop:insets.top}]}>
        <LinearGradient
-          colors={["#FFFFFF", "#EFFFF4"]}
+          colors={[Colors.background, Colors.lightGreen]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
           style={{ flex:1 }}
@@ -75,40 +76,37 @@ const MyProfileScreen = ({ navigation }) => {
           <View style={styles.profileRow}>
             <View style={styles.emojiBox}>
               {profilePicture && !imageError ? (
-                <Image 
-                  source={{uri: profilePicture}} 
-                  style={{height:'100%', width:'100%', resizeMode:'cover', borderRadius: 10}}
-                  onError={() => {
-                    console.log('Profile image failed to load:', profilePicture);
-                    setImageError(true);
-                  }}
-                  onLoad={() => {
-                    console.log('Profile image loaded successfully:', profilePicture);
-                  }}
+                <Image
+                  source={{uri: profilePicture}}
+                  style={styles.avatar}
+                  onError={() => setImageError(true)}
                 />
               ) : (
-                <Image 
-                  source={ImageConstant.user2} 
-                  style={{height:'100%', width:'100%', resizeMode:'cover', borderRadius: 10}}
+                <Image
+                  source={ImageConstant.user2}
+                  style={styles.avatar}
                 />
               )}
               {/* <TouchableOpacity style={{position:'absolute', bottom:-5, right:-5}}>
               <Image source={ ImageConstant.editcammra} style={{height:27, width:27, resizeMode:'contain', }}/>
               </TouchableOpacity> */}
             </View>
-            <View style={{ marginLeft: 12 }}>
-              <Typography 
-                size={22}
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Typography
+                size={21}
                 color="white"
+                numberOfLines={1}
                 type={Font.GeneralSans_Semibold}
               >
                 {userName}
               </Typography>
 
               {userEmail ? (
-              <Typography 
-                size={16}
-                color="white"
+              <Typography
+                size={14}
+                color="rgba(255,255,255,0.88)"
+                numberOfLines={1}
+                style={{ marginTop: 3 }}
                 type={Font.GeneralSans_Regular}
               >
                   {userEmail}
@@ -116,9 +114,10 @@ const MyProfileScreen = ({ navigation }) => {
               ) : null}
 
               {userPhone ? (
-              <Typography 
-                size={16}
-                color="white"
+              <Typography
+                size={14}
+                color="rgba(255,255,255,0.88)"
+                style={{ marginTop: 2 }}
                 type={Font.GeneralSans_Regular}
               >
                   {userPhone}
@@ -143,27 +142,21 @@ const MyProfileScreen = ({ navigation }) => {
         <View style={styles.menuContainer}>
           <MenuItem title="My Profile" icon={ImageConstant.user} subtitle="View or change profile details"  onpress={()=>navigation.navigate('SettingProfile')}/>
           <MenuItem title="Manage Address" icon={ImageConstant.location2} subtitle="Share, Edit & Add Address"  onpress={()=>navigation.navigate('ManageAdresss')}/>
-          <MenuItem title="Help & Support" icon={ImageConstant.help} subtitle="FAQs and links"  onpress={() => navigation.navigate('CMSScreen', { slug: 'help-support-general' })} />
+          <MenuItem title="Help & Support" icon={ImageConstant.help} subtitle="FAQs and links"  onpress={() => navigation.navigate('HelpSupport')} />
           <MenuItem title="Settings" icon={ImageConstant.setting} subtitle="Manage your account setting" onpress={() => navigation.navigate('SettingsScreen')} />
         </View>
 
         {/* LOGOUT BUTTON */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <View  style={styles.logoutGradient}>
-            <View style={{backgroundColor:'white', height:40, width:40, borderRadius:10, justifyContent:'center', alignItems:'center'}}>
-
-         
-            <Image source={ImageConstant.logout} style={{height:20, width:22, resizeMode:'contain'}}/>
-            </View>
-            <Typography 
-              size={16}
-              color="white"
-              marginLeft={10}
-              type={Font.GeneralSans_Medium}
-            >
-              LOG OUT
-            </Typography>
-          </View>
+        <TouchableOpacity style={styles.logoutBtn} activeOpacity={0.8} onPress={handleLogout}>
+          <Image source={ImageConstant.logout} style={styles.logoutIcon}/>
+          <Typography
+            size={16}
+            color={Colors.danger}
+            style={{ marginLeft: 10 }}
+            type={Font.GeneralSans_Semibold}
+          >
+            Log Out
+          </Typography>
         </TouchableOpacity>
       </ScrollView>
       </LinearGradient>
@@ -173,11 +166,13 @@ const MyProfileScreen = ({ navigation }) => {
 
 
 const TopBox = ({ label , icon}) => (
-  <TouchableOpacity style={styles.topBox}>
-    <Image source={icon} style={{height:20, width:23, resizeMode:'contain', marginBottom:6}}/>
-    <Typography 
-      size={16}
-      color="#111719"
+  <TouchableOpacity style={styles.topBox} activeOpacity={0.8}>
+    <View style={styles.topBoxIcon}>
+      <Image source={icon} style={{height:20, width:22, resizeMode:'contain'}}/>
+    </View>
+    <Typography
+      size={13}
+      color={Colors.textPrimary}
       type={Font.GeneralSans_Medium}
     >
       {label}
@@ -187,34 +182,28 @@ const TopBox = ({ label , icon}) => (
 
 /* MENU ITEM COMPONENT */
 const MenuItem = ({ title, subtitle, icon,onpress }) => (
-  <TouchableOpacity style={styles.menuItem} onPress={onpress}>
-    <View style={{ flexDirection: "row", justifyContent:'space-between', alignItems:'center' }}>
-
-     <View style={{flexDirection:'row', alignItems:'center'}}>
-     <Image source={icon} style={{height:28, width:28, resizeMode:'contain', marginRight:20}}/>
-     <View>
-
-    
-     <Typography 
+  <TouchableOpacity style={styles.menuItem} activeOpacity={0.8} onPress={onpress}>
+    <View style={styles.menuIconWrap}>
+      <Image source={icon} style={{height:22, width:22, resizeMode:'contain'}}/>
+    </View>
+    <View style={{ flex: 1 }}>
+      <Typography
         size={16}
-        color="#000000"
+        color={Colors.textPrimary}
         type={Font.GeneralSans_Medium}
       >
         {title}
       </Typography>
-
-      <Typography 
-        size={12}
-        marginTop={3}
-        color="#515154"
+      <Typography
+        size={12.5}
+        color={Colors.textSecondary}
+        style={{ marginTop: 3 }}
         type={Font.GeneralSans_Regular}
       >
         {subtitle}
       </Typography>
-      </View>
-     </View>
-      <Image source={ImageConstant.nextarrow} style={{height:12, width:6, resizeMode:'contain'}}/>
     </View>
+    <Image source={ImageConstant.nextarrow} style={styles.chevron}/>
   </TouchableOpacity>
 );
 
@@ -222,82 +211,114 @@ export default MyProfileScreen;
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor:"#00B172" },
+  container: { flex: 1, backgroundColor: Colors.brand },
 
   header: {
-    paddingBottom: 30,
+    paddingBottom: 56,
     paddingHorizontal: 20,
-    backgroundColor:"#00B172"
+    backgroundColor: Colors.brand,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
 
-  profileRow: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    paddingTop: 20 
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 12,
   },
 
   emojiBox: {
-    width: 90,
-    height: 90,
-    padding:5,
-    backgroundColor: "#ffffff55",
-    borderRadius: 10,
+    width: 84,
+    height: 84,
+    padding: 3,
+    borderRadius: 42,
+    backgroundColor: 'rgba(255,255,255,0.35)',
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor:'white'
   },
 
-  editBtn: { 
-    marginLeft: "auto", 
-    padding: 8 
+  avatar: {
+    height: '100%',
+    width: '100%',
+    resizeMode: 'cover',
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: Colors.white,
   },
 
   topRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "#FFF4E6",
-    padding: 15,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginTop: -36,
   },
 
   topBox: {
-    backgroundColor: "#fff",
-    width: '30%',
-    height: 80,
-    borderRadius: 12,
-    elevation: 2,
+    backgroundColor: Colors.white,
+    width: '31%',
+    paddingVertical: 14,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
+    ...Shadow.md,
   },
 
-  menuContainer: { marginTop: 12 },
+  topBoxIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.brandSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+
+  menuContainer: { marginTop: 24, paddingHorizontal: 20 },
 
   menuItem: {
-    
-    borderWidth: 1,
-    borderColor: "#E3E3E3",
-    width: '90%',
-    alignSelf: 'center',
-    marginBottom: 15,
-    borderRadius: 20,
-    height:81,
-    justifyContent:'center',
-    paddingHorizontal:20
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    marginBottom: 12,
+    borderRadius: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    ...Shadow.sm,
   },
 
-  logoutBtn: { 
-    marginHorizontal: 20, 
-    marginTop: 25, 
-    width: '40%', 
-    alignSelf: 'center' 
+  menuIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: Colors.brandTint,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
   },
 
-  logoutGradient: {
-    padding: 14,
-    borderRadius: 12,
-  width:169,
-    alignItems: "center",
-    backgroundColor:"#00B172",
-    flexDirection:'row'
-    
+  chevron: {
+    height: 12,
+    width: 7,
+    resizeMode: 'contain',
+    tintColor: Colors.textMuted,
+  },
+
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 32,
+    height: 54,
+    borderRadius: 16,
+    backgroundColor: Colors.dangerSoft,
+  },
+
+  logoutIcon: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    tintColor: Colors.danger,
   },
 });

@@ -27,6 +27,8 @@ const DropdownNew = ({
   leftIcons = ImageConstant.arrow_down,
   leftIconsShow = false,
   selectedTextStyleNew = {},
+  search = false,
+  searchPlaceholder = 'Search...',
 }) => {
   const renderItem = (item, index) => {
     return (
@@ -79,7 +81,7 @@ const DropdownNew = ({
     <>
       <View
         style={[
-          {marginHorizontal: marginHorizontal, marginVertical: 15},
+          {marginHorizontal: marginHorizontal, marginVertical: 6},
           MainBoxStyle,
         ]}>
         {title && (
@@ -90,7 +92,7 @@ const DropdownNew = ({
             {source && (
               <Image source={source} style={[styles.img_style, style_img]} />
             )}
-            <Typography type={Font?.GeneralSans_Regular} size={15} color='#282727' style={[styles.txt_style, style_title]}>
+            <Typography type={Font?.GeneralSans_Medium} size={14} color={Colors.textPrimary} style={[styles.txt_style, style_title]}>
               {title}
             </Typography>
           </View>
@@ -106,6 +108,9 @@ const DropdownNew = ({
           data={data}
           value={value}
           maxHeight={300}
+          search={search}
+          searchPlaceholder={searchPlaceholder}
+          inputSearchStyle={styles.inputSearchStyle}
           labelField="label"
           valueField="value"
           placeholder={placeholder}
@@ -174,8 +179,8 @@ const DropdownNew = ({
             color: 'red',
             fontSize: 12,
             marginStart: 5,
-            marginTop: -5,
-            marginBottom: 10,
+            marginTop: -2,
+            marginBottom: 6,
           }}>
           {error}
         </Typography>
@@ -200,25 +205,27 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   txt_style: {
-    color: '#282727',
-    fontize: 14,
-    fontFamily: Font.GeneralSans_Regular,
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontFamily: Font.GeneralSans_Medium,
   },
   dropdown: {
-    borderWidth: 1,
-    borderColor: '#DDDDDD',
-    borderRadius: 10,
+    borderWidth: 1.2,
+    borderColor: Colors.border,
+    borderRadius: 14,
     paddingLeft:10,
     backgroundColor:'white',
 
-    height: 60,
+    height: 56,
     width:'100%'
   },
   placeholderStyle: {
     color: Colors.white,
   },
   inputSearchStyle: {
-    borderWidth: 1,
+    borderWidth: 0,
+    height: 44,
+    fontFamily: Font.GeneralSans_Regular,
   },
   iconStyle: {
     height: 24,

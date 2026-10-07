@@ -9,6 +9,8 @@ import ProfileSetup from '../Screens/BeauticianScreen/ProfileSetup';
 import KYCVerificationStep1 from '../Screens/BeauticianScreen/KYCVerificationStep1';
 import KYCVerificationStep2 from '../Screens/BeauticianScreen/KYCVerificationStep2';
 import BankVerification from '../Screens/BeauticianScreen/BankVerification';
+import AddService from '../Screens/BeauticianScreen/AddService';
+import BeauticianGallery from '../Screens/BeauticianScreen/BeauticianGallery';
 import BeauticianSettingProfile from '../Screens/BeauticianScreen/BeauticianSettingProfile';
 import BeauticianManageAdresss from '../Screens/BeauticianScreen/BeauticianManageAdresss';
 import CMSScreen from '../Screens/CMSScreen';
@@ -86,6 +88,14 @@ const BeauticianStack = () => {
         name="Home" 
         component={createBottomTabNavigator}
         initialParams={{userType: 'beautician'}}
+      />
+      <Stack.Screen
+        name="AddService"
+        component={AddService}
+      />
+      <Stack.Screen
+        name="BeauticianGallery"
+        component={BeauticianGallery}
       />
       <Stack.Screen 
         name="BeauticianSettingProfile" 

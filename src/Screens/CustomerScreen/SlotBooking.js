@@ -1,107 +1,153 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     StyleSheet,
     View,
     ScrollView,
     Dimensions,
     TouchableOpacity,
+    ActivityIndicator,
+    Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Colors } from '../../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ScreenHeader from '../../Component/ScreenHeader';
 import Typography from '../../Component/UI/Typography';
 import { Font } from '../../Constants/Font';
 import Button from '../../Component/Button';
-import Input from '../../Component/Input';
 import DropdownNew from '../../Component/DropdownNew';
-import { useNavigation } from '@react-navigation/native';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import SimpleToast from 'react-native-simple-toast';
 import moment from 'moment';
+import { getBookingSlots, getAppConfig } from '../../Backend/BookingAPI';
 
 const { width } = Dimensions.get('window');
+const MIN_PEOPLE = 1;
+const MAX_PEOPLE = 10;
 
 const SlotBooking = () => {
     const navigation = useNavigation();
+    const route = useRoute();
 
-    const [selectedDate, setSelectedDate] = useState(22);
-    const [selectedMonth, setSelectedMonth] = useState('August');
-    const [selectedYear, setSelectedYear] = useState('2025');
-    const [selectedTimeSlot, setSelectedTimeSlot] = useState('02:00 - 02:30 pm');
-    const [numberOfPeople, setNumberOfPeople] = useState('1');
+    const today = moment().startOf('day');
+    const [advanceDays, setAdvanceDays] = useState(30);
+    const [selectedDate, setSelectedDate] = useState(today.format('YYYY-MM-DD'));
+    const [visibleMonth, setVisibleMonth] = useState(today.format('YYYY-MM'));
+    const [slots, setSlots] = useState([]);
+    const [slotsLoading, setSlotsLoading] = useState(true);
+    const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+    const [peopleCount, setPeopleCount] = useState(
+        Math.min(Math.max(parseInt(route?.params?.numberOfPeople, 10) || 1, MIN_PEOPLE), MAX_PEOPLE),
+    );
 
-    const months = [
-        { label: 'January', value: 'January' },
-        { label: 'February', value: 'February' },
-        { label: 'March', value: 'March' },
-        { label: 'April', value: 'April' },
-        { label: 'May', value: 'May' },
-        { label: 'June', value: 'June' },
-        { label: 'July', value: 'July' },
-        { label: 'August', value: 'August' },
-        { label: 'September', value: 'September' },
-        { label: 'October', value: 'October' },
-        { label: 'November', value: 'November' },
-        { label: 'December', value: 'December' },
-    ];
+    const changePeople = (step) => {
+        setPeopleCount(c => Math.min(Math.max(c + step, MIN_PEOPLE), MAX_PEOPLE));
+    };
 
-    const years = [];
-    const currentYear = moment().year();
-    for (let i = currentYear; i <= currentYear + 2; i++) {
-        years.push({ label: String(i), value: String(i) });
-    }
+    useEffect(() => {
+        getAppConfig(
+            res => setAdvanceDays(parseInt(res?.data?.booking_advance_days, 10) || 30),
+            () => {},
+        );
+    }, []);
 
-    const timeSlots = [
-        '01:00 - 01:30 pm',
-        '02:00 - 02:30 pm',
-        '03:00 - 03:30 pm',
-        '04:00 - 05:30 pm',
-        '05:30 - 06:00 pm',
-        '06:00 - 06:30 pm',
-    ];
+    const lastDate = today.clone().add(advanceDays, 'days');
 
-    // Generate calendar dates for August 2025
+    // Only months that contain bookable days
+    const months = useMemo(() => {
+        const list = [];
+        const cursor = today.clone().startOf('month');
+        while (cursor.isSameOrBefore(lastDate, 'month')) {
+            list.push({ label: cursor.format('MMMM YYYY'), value: cursor.format('YYYY-MM') });
+            cursor.add(1, 'month');
+        }
+        return list;
+    }, [advanceDays]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Load slots whenever the date changes
+    useEffect(() => {
+        setSlotsLoading(true);
+        setSelectedTimeSlot(null);
+        getBookingSlots(
+            selectedDate,
+            null,
+            res => {
+                setSlots(res?.data?.slots || []);
+                setSlotsLoading(false);
+            },
+            err => {
+                console.log('Slots error:', err);
+                setSlots([]);
+                setSlotsLoading(false);
+            },
+        );
+    }, [selectedDate]);
+
+    // Monday-first grid for the visible month
     const generateCalendarDates = () => {
-        const month = moment().month(selectedMonth).month();
-        const year = parseInt(selectedYear);
-        const firstDay = moment({ year, month, day: 1 });
-        const lastDay = moment({ year, month, day: 1 }).endOf('month');
-        const startDate = firstDay.clone().startOf('week');
-        const endDate = lastDay.clone().endOf('week');
+        const firstDay = moment(visibleMonth, 'YYYY-MM').startOf('month');
+        const lastDay = firstDay.clone().endOf('month');
+        const startDate = firstDay.clone().startOf('isoWeek');
+        const endDate = lastDay.clone().endOf('isoWeek');
 
         const dates = [];
-        let currentDate = startDate.clone();
-
-        while (currentDate <= endDate) {
+        const currentDate = startDate.clone();
+        while (currentDate.isSameOrBefore(endDate, 'day')) {
+            const inMonth = currentDate.month() === firstDay.month();
+            const bookable = inMonth && currentDate.isSameOrAfter(today, 'day') && currentDate.isSameOrBefore(lastDate, 'day');
             dates.push({
                 date: currentDate.date(),
-                fullDate: currentDate.clone(),
-                isCurrentMonth: currentDate.month() === month,
-                isSelected: currentDate.date() === selectedDate && currentDate.month() === month,
+                value: currentDate.format('YYYY-MM-DD'),
+                isCurrentMonth: inMonth,
+                isBookable: bookable,
+                isSelected: currentDate.format('YYYY-MM-DD') === selectedDate,
             });
             currentDate.add(1, 'day');
         }
-
         return dates;
     };
 
     const calendarDates = generateCalendarDates();
     const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+    const availableCount = slots.filter(sl => sl.available).length;
+
+    const monthIndex = months.findIndex(m => m.value === visibleMonth);
+    const canGoPrev = monthIndex > 0;
+    const canGoNext = monthIndex > -1 && monthIndex < months.length - 1;
+
+    const changeMonth = (step) => {
+        const next = months[monthIndex + step];
+        if (next) {
+            setVisibleMonth(next.value);
+        }
+    };
+
+    const isPastDate = (value) => moment(value, 'YYYY-MM-DD').isBefore(moment().startOf('day'), 'day');
 
     const handleDateSelect = (date) => {
-        if (date.isCurrentMonth) {
-            setSelectedDate(date.date);
+        if (date.isBookable && !isPastDate(date.value)) {
+            setSelectedDate(date.value);
         }
     };
 
     const handleConfirmSlot = () => {
-        console.log('Slot confirmed:', {
-            date: selectedDate,
-            month: selectedMonth,
-            year: selectedYear,
-            timeSlot: selectedTimeSlot,
-            numberOfPeople: numberOfPeople,
+        if (isPastDate(selectedDate)) {
+            SimpleToast.show('Please select today or a future date', SimpleToast.SHORT);
+            setSelectedDate(moment().format('YYYY-MM-DD'));
+            setVisibleMonth(moment().format('YYYY-MM'));
+            return;
+        }
+        if (!selectedTimeSlot) {
+            SimpleToast.show('Please select a time slot', SimpleToast.SHORT);
+            return;
+        }
+        navigation.navigate('ChooseBeauticians', {
+            bookingDate: selectedDate,
+            timeSlot: selectedTimeSlot.value,
+            timeSlotLabel: selectedTimeSlot.label,
+            numberOfPeople: peopleCount,
+            forSomeoneElse: !!route?.params?.forSomeoneElse,
         });
-        navigation.navigate('BookingRequest');
     };
 
     return (
@@ -112,9 +158,6 @@ const SlotBooking = () => {
             style={styles.backgroundGradient}>
             <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                {/* Background Gradient */}
-               
-
                 {/* Header */}
                 <ScreenHeader title="Slot Booking" showGreenLine={true} />
 
@@ -135,25 +178,38 @@ const SlotBooking = () => {
 
                             {/* Calendar Card */}
                             <View style={styles.calendarCard}>
-                                {/* Month and Year Selector */}
+                                {/* Month Selector */}
                                 <View style={styles.monthYearSelector}>
+                                    <TouchableOpacity
+                                        disabled={!canGoPrev}
+                                        onPress={() => changeMonth(-1)}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        style={[styles.monthArrow, !canGoPrev && styles.monthArrowDisabled]}>
+                                        <Image
+                                            source={ImageConstant.nextarrow}
+                                            style={[styles.monthArrowIcon, { transform: [{ rotate: '180deg' }] }]}
+                                        />
+                                    </TouchableOpacity>
                                     <DropdownNew
                                         MainBoxStyle={styles.monthYearDropdown}
                                         data={months}
-                                        value={selectedMonth}
-                                        onChange={(item) => setSelectedMonth(item.value)}
+                                        value={visibleMonth}
+                                        onChange={(item) => setVisibleMonth(item.value)}
                                         style_dropdown={styles.monthYearDropdownStyle}
                                         placeholder=""
+                                        size={24}
+                                        selectedTextStyleNew={styles.monthYearText}
                                     />
-                                    <View style={styles.arrowSeparator} />
-                                    <DropdownNew
-                                        MainBoxStyle={styles.monthYearDropdown}
-                                        data={years}
-                                        value={selectedYear}
-                                        onChange={(item) => setSelectedYear(item.value)}
-                                        style_dropdown={styles.monthYearDropdownStyle}
-                                        placeholder=""
-                                    />
+                                    <TouchableOpacity
+                                        disabled={!canGoNext}
+                                        onPress={() => changeMonth(1)}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        style={[styles.monthArrow, !canGoNext && styles.monthArrowDisabled]}>
+                                        <Image
+                                            source={ImageConstant.nextarrow}
+                                            style={[styles.monthArrowIcon, { transform: [{ rotate: '0deg' }] }]}
+                                        />
+                                    </TouchableOpacity>
                                 </View>
 
                                 {/* Week Days Header */}
@@ -162,7 +218,7 @@ const SlotBooking = () => {
                                         <View key={day} style={styles.weekDayHeader}>
                                             <Typography
                                                 type={Font.GeneralSans_Medium}
-                                                size={18}
+                                                size={16}
                                                 color="#9291A5">
                                                 {day}
                                             </Typography>
@@ -175,25 +231,25 @@ const SlotBooking = () => {
 
                                 {/* Calendar Grid */}
                                 <View style={styles.calendarGrid}>
-                                    {calendarDates.map((dateItem, index) => (
+                                    {calendarDates.map((dateItem) => (
                                         <TouchableOpacity
-                                            key={index}
+                                            key={dateItem.value}
+                                            disabled={!dateItem.isBookable}
                                             onPress={() => handleDateSelect(dateItem)}
                                             style={[
                                                 styles.dateCell,
-                                                !dateItem.isCurrentMonth && styles.dateCellDisabled,
-                                                dateItem.isSelected && styles.dateCellSelected,
+                                                !dateItem.isBookable && styles.dateCellDisabled,
                                             ]}>
                                             {dateItem.isSelected && (
                                                 <View style={styles.selectedDateCircle} />
                                             )}
                                             <Typography
                                                 type={Font.GeneralSans_Regular}
-                                                size={18}
+                                                size={17}
                                                 color={
                                                     dateItem.isSelected
                                                         ? '#FFFFFF'
-                                                        : !dateItem.isCurrentMonth
+                                                        : !dateItem.isBookable
                                                         ? '#9291A5'
                                                         : '#1D1C2B'
                                                 }
@@ -201,7 +257,7 @@ const SlotBooking = () => {
                                                     dateItem.isSelected && styles.selectedDateText,
                                                     { zIndex: 1 },
                                                 ]}>
-                                                {dateItem.date}
+                                                {dateItem.isCurrentMonth ? dateItem.date : ''}
                                             </Typography>
                                         </TouchableOpacity>
                                     ))}
@@ -218,66 +274,108 @@ const SlotBooking = () => {
                                 style={styles.sectionTitle}>
                                 Select Service Start time
                             </Typography>
+                            <Typography
+                                type={Font.GeneralSans_Regular}
+                                size={14}
+                                color="#6B6B6B"
+                                style={styles.slotHint}>
+                                {moment(selectedDate).format('dddd, D MMMM')}
+                                {!slotsLoading ? ` · ${availableCount} slots available` : ''}
+                            </Typography>
 
+                            {slotsLoading ? (
+                                <ActivityIndicator color="#00B272" style={{ marginVertical: 20 }} />
+                            ) : availableCount === 0 ? (
+                                <Typography
+                                    type={Font.GeneralSans_Regular}
+                                    size={15}
+                                    color="#6B6B6B">
+                                    No slots left on this day. Please pick another date.
+                                </Typography>
+                            ) : (
                             <View style={styles.timeSlotsContainer}>
-                                {timeSlots.map((slot) => (
+                                {slots.map((slot) => {
+                                    const selected = selectedTimeSlot?.value === slot.value;
+                                    return (
                                     <TouchableOpacity
-                                        key={slot}
+                                        key={slot.value}
+                                        disabled={!slot.available}
                                         onPress={() => setSelectedTimeSlot(slot)}
                                         style={[
                                             styles.timeSlotButton,
-                                            selectedTimeSlot === slot && styles.timeSlotButtonSelected,
+                                            selected && styles.timeSlotButtonSelected,
+                                            !slot.available && styles.timeSlotButtonDisabled,
                                         ]}>
                                         <Typography
                                             type={Font.GeneralSans_Medium}
-                                            size={16}
-                                            color={
-                                                selectedTimeSlot === slot ? '#101010' : '#101010'
-                                            }
+                                            size={15}
+                                            color={!slot.available ? '#B5B5B5' : selected ? '#00925D' : '#101010'}
                                             style={styles.timeSlotText}>
-                                            {slot.toLowerCase()}
+                                            {slot.label}
                                         </Typography>
                                     </TouchableOpacity>
-                                ))}
+                                    );
+                                })}
                             </View>
+                            )}
                         </View>
 
-                        {/* Add Number of Peoples Section */}
+                        {/* Number of People Section */}
                         <View style={styles.section}>
                             <Typography
-                                type={Font.GeneralSans_Medium}
-                                size={16}
-                                color="#0A0A0A"
-                                style={styles.peopleTitle}>
-                                Add Number of Peoples
+                                type={Font.GeneralSans_Semibold}
+                                size={20}
+                                color="#1A1A1A"
+                                style={styles.sectionTitle}>
+                                Number of People
                             </Typography>
 
-                            <View style={styles.peopleInputCard}>
-                                <Input
-                                    title=""
-                                    placeholder="1"
-                                    value={numberOfPeople}
-                                    onChange={setNumberOfPeople}
-                                    keyboardType="numeric"
-                                    style_inputContainer={styles.peopleInput}
-                                    mainStyle={styles.peopleInputMain}
-                                    showTitle={false}
-                                    placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                                />
+                            <View style={styles.peopleCard}>
+                                <Typography
+                                    type={Font.GeneralSans_Regular}
+                                    size={15}
+                                    color="#6B6B6B">
+                                    {peopleCount === 1 ? '1 person' : `${peopleCount} people`}
+                                </Typography>
+                                <View style={styles.stepper}>
+                                    <TouchableOpacity
+                                        disabled={peopleCount <= MIN_PEOPLE}
+                                        onPress={() => changePeople(-1)}
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                        style={[styles.stepperButton, peopleCount <= MIN_PEOPLE && styles.stepperButtonDisabled]}>
+                                        <Typography type={Font.GeneralSans_Semibold} size={20} color="#00B272" style={styles.stepperSign}>
+                                            −
+                                        </Typography>
+                                    </TouchableOpacity>
+                                    <Typography
+                                        type={Font.GeneralSans_Semibold}
+                                        size={18}
+                                        color="#1D1C2B"
+                                        style={styles.stepperValue}>
+                                        {peopleCount}
+                                    </Typography>
+                                    <TouchableOpacity
+                                        disabled={peopleCount >= MAX_PEOPLE}
+                                        onPress={() => changePeople(1)}
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                        style={[styles.stepperButton, styles.stepperButtonActive, peopleCount >= MAX_PEOPLE && styles.stepperButtonDisabled]}>
+                                        <Typography type={Font.GeneralSans_Semibold} size={20} color="#FFFFFF" style={styles.stepperSign}>
+                                            +
+                                        </Typography>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         </View>
 
-                       
-                            <Button
-                                title="CONFIRM SLOT"
-                                onPress={handleConfirmSlot}
-                                style={styles.button}
-                                linerColor={['#00B272', '#00B272']}
-                                title_style={styles.buttonText}
-                                main_style={styles.buttonMain}
-                            />
-                        </View>
-                    
+                        <Button
+                            title="CONFIRM SLOT"
+                            onPress={handleConfirmSlot}
+                            disabled={!selectedTimeSlot}
+                            linerColor={selectedTimeSlot ? ['#00B272', '#00B272'] : ['#C9CED6', '#C9CED6']}
+                            main_style={styles.buttonMain}
+                        />
+                    </View>
+
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -318,17 +416,43 @@ const styles = StyleSheet.create({
     monthYearSelector: {
         flexDirection: 'row',
         alignItems: 'center',
-      justifyContent:'center',
+        justifyContent: 'space-between',
         marginBottom: 20,
     },
+    monthArrow: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: '#DDDDDD',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    monthArrowDisabled: {
+        opacity: 0.3,
+    },
+    monthArrowIcon: {
+        width: 12,
+        height: 12,
+        resizeMode: 'contain',
+        tintColor: '#1D1C2B',
+    },
+    monthYearText: {
+        fontFamily: Font.GeneralSans_Medium,
+        fontSize: 17,
+        color: '#1D1C2B',
+        textAlign: 'center',
+    },
     monthYearDropdown: {
-        width: 120,
-    
+        flex: 1,
+        marginHorizontal: 12,
+        marginVertical: 0,
     },
     monthYearDropdownStyle: {
-        height: 28,
+        height: 36,
         borderColor: 'transparent',
-    
+        paddingLeft: 24,
+        backgroundColor: 'transparent',
     },
   
     calendarCard: {
@@ -420,38 +544,63 @@ const styles = StyleSheet.create({
     },
     timeSlotButtonSelected: {
         borderColor: '#00B272',
+        borderWidth: 1.5,
+        backgroundColor: '#F4FCF8',
+    },
+    timeSlotButtonDisabled: {
+        backgroundColor: '#F4F4F4',
+        borderColor: '#EEEEEE',
+        elevation: 0,
+        shadowOpacity: 0,
+    },
+    slotHint: {
+        marginTop: -12,
+        marginBottom: 14,
     },
     timeSlotText: {
         textTransform: 'lowercase',
+        textAlign: 'center',
     },
-    peopleTitle: {
-        marginBottom: 12,
-        fontSize: 16,
-    },
-    peopleInputCard: {
+    peopleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
         backgroundColor: '#FFFFFF',
         borderWidth: 1,
         borderColor: '#DDDDDD',
         borderRadius: 12,
-        shadowColor: '#E9E9E9',
-        shadowOffset: {
-            width: 15,
-            height: 20,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 22.5,
-        elevation: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
-    peopleInput: {
-        height: 60,
-        borderRadius: 12,
-        backgroundColor: 'transparent',
-        borderWidth: 0,
+    stepper: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    peopleInputMain: {
-        margin: 0,
+    stepperButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: '#00B272',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-  
-   
-  
+    stepperButtonActive: {
+        backgroundColor: '#00B272',
+    },
+    stepperButtonDisabled: {
+        opacity: 0.35,
+    },
+    stepperSign: {
+        lineHeight: 22,
+        textAlign: 'center',
+    },
+    stepperValue: {
+        minWidth: 44,
+        textAlign: 'center',
+    },
+    buttonMain: {
+        marginTop: 4,
+        marginBottom: 10,
+    },
 });

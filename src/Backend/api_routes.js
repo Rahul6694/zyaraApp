@@ -41,3 +41,30 @@ export const LOCATIONS_STATES = 'locations/states';
 
 export const CATEGORIES = 'categories';
 export const SUBCATEGORIES = 'sub-categories';
+
+// Customer Address APIs
+export const USER_ADDRESSES = 'users/addresses';
+
+// Cart APIs
+export const CART = 'cart';
+
+// Booking APIs
+export const BOOKINGS = 'bookings';
+export const BOOKING_SLOTS = 'bookings/slots';
+export const MY_BOOKINGS = 'bookings/my';
+export const BEAUTICIAN_BOOKINGS = 'bookings/beautician';
+
+// Beautician discovery & dashboard APIs
+export const BEAUTICIANS_AVAILABLE = 'beauticians/available';
+export const BEAUTICIAN_GALLERY = 'beauticians/gallery';
+export const BEAUTICIAN_DASHBOARD = 'beauticians/dashboard';
+export const BEAUTICIAN_ONLINE_STATUS = 'beauticians/online-status';
+export const BEAUTICIAN_EARNINGS = 'beauticians/earnings';
+export const BEAUTICIAN_PAYOUTS = 'beauticians/payouts';
+
+// Home screen (banners, categories, recommended, beauticians)
+export const HOME = 'home';
+
+// Help & support / app config
+export const SUPPORT = 'support';
+export const APP_CONFIG = 'config';

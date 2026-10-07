@@ -98,7 +98,7 @@ export default new LocalizedStrings({
       mobile_placeholder: 'Enter mobile number',
       otp_message: "We'll send an OTP to this number",
       otp_verification: 'OTP Verification',
-      otp_placeholder: 'Enter 6-digit OTP',
+      otp_placeholder: 'Enter 4-digit OTP',
       verify: 'Verify',
       terms_message: 'By logging in, you agree to our',
       term_services: 'Terms of Service',
@@ -298,7 +298,7 @@ export default new LocalizedStrings({
       Verify: 'Aadhaar - OTP Verification',
       Description:
         'An OTP has been sent to the mobile number linked with staff Aadhaar XXXX-XXXX-',
-      OTP_Placeholders: 'Enter 6-digit OTP',
+      OTP_Placeholders: 'Enter 4-digit OTP',
       Resend_Text: "Didn't receive the OTP? Resend",
       Verify_Add_Staff: 'Verify & Add Staff',
       Aadhaar_Info:
@@ -513,7 +513,7 @@ export default new LocalizedStrings({
     AadhaarOTPVerification: {
       title: 'Aadhaar - OTP Verification',
       message: 'An OTP has been sent to the mobile number linked with staff Aadhaar.',
-      otp_placeholder: 'Enter 6-digit OTP',
+      otp_placeholder: 'Enter 4-digit OTP',
       not_received: "Didn't receive the OTP?",
       resend: 'Resend',
       verify_proceed: 'Verify & Proceed'

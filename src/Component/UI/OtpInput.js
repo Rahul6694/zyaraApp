@@ -23,7 +23,7 @@ const OtpInput = ({
   mainStyle,
   resendOtp=()=>{}
 }) => {
-  const CELL_COUNT = 6;
+  const CELL_COUNT = 4;
   const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
   const [counter, setCounter] = useState(60);
   const [prop, getCellOnLayoutHandler] = useClearByFocusCell({

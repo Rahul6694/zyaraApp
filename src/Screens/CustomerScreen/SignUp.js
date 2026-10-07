@@ -24,6 +24,7 @@ import { customerSignup } from '../../Backend/CustomerAPI';
 import SimpleToast from 'react-native-simple-toast';
 import ImageModal from '../../Component/Modals/ImageModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ScreenHeader from '../../Component/ScreenHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -182,23 +183,12 @@ const SignUp = () => {
         />
 
         {/* Fixed Header */}
-        <View style={styles.header}>
-          <TouchableOpacity  onPress={()=>navigation.navigate('Onboarding')}>
-            <Image
-              source={ImageConstant.BackArrow}
-              style={styles.backArrow}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          <View style={styles.logoContainer}>
-            <Image
-              source={ImageConstant.zyara}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <View style={styles.placeholder} />
-        </View>
+        <ScreenHeader
+          showLogo={true}
+          showGreenLine={false}
+          style={{ paddingTop: 10 }}
+          onBackPress={() => navigation.navigate('Onboarding')}
+        />
 
         <KeyboardAvoidingView
           style={styles.keyboardView}
@@ -210,58 +200,55 @@ const SignUp = () => {
             {/* Content */}
             <View style={styles.content}>
               <Typography
-                size={35}
+                size={32}
                 type={Font.GeneralSans_Bold}
-                color="#00210B"
+                color={Colors.textPrimary}
                 style={styles.title}>
                 Sign Up
               </Typography>
 
               <Typography
-                size={20}
+                size={16}
                 type={Font.GeneralSans_Regular}
-                color="#383838"
+                color={Colors.textSecondary}
                 style={styles.subtitle}>
-                Create your account{'\n'}to get started.
+                Create your account to get started.
               </Typography>
 
               {/* Profile Picture Upload */}
               <View style={styles.profilePictureContainer}>
-                <Typography
-                  size={16}
-                  type={Font.GeneralSans_Medium}
-                  color={Colors.black}
-                  style={styles.profilePictureTitle}>
-                  Profile Picture
-                </Typography>
                 <TouchableOpacity
-                  style={styles.profilePictureBox}
                   onPress={() => setShowImageModal(true)}
-                  activeOpacity={0.7}>
-                  {profilePicture ? (
-                    <Image
-                      source={{ uri: profilePicture.path || profilePicture.uri }}
-                      style={styles.profileImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={styles.profilePlaceholder}>
+                  activeOpacity={0.8}>
+                  <View style={styles.profilePictureBox}>
+                    {profilePicture ? (
+                      <Image
+                        source={{ uri: profilePicture.path || profilePicture.uri }}
+                        style={styles.profileImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
                       <Typography
                         size={40}
-                        type={Font.GeneralSans_Regular}
-                        color={Colors.gray}>
-                        📷
+                        type={Font.GeneralSans_Semibold}
+                        color={Colors.zyaraGreen}>
+                        {name.trim() ? name.trim().charAt(0).toUpperCase() : '+'}
                       </Typography>
-                      <Typography
-                        size={12}
-                        type={Font.GeneralSans_Regular}
-                        color={Colors.gray}
-                        style={styles.profilePlaceholderText}>
-                        Tap to upload
-                      </Typography>
-                    </View>
-                  )}
+                    )}
+                  </View>
+                  <Image
+                    source={ImageConstant.editcammra}
+                    style={styles.cameraBadge}
+                    resizeMode="contain"
+                  />
                 </TouchableOpacity>
+                <Typography
+                  size={14}
+                  type={Font.GeneralSans_Medium}
+                  color={Colors.textSecondary}
+                  style={styles.profilePlaceholderText}>
+                  {profilePicture ? 'Change profile photo' : 'Add profile photo (optional)'}
+                </Typography>
               </View>
 
               <View style={styles.inputContainer}>
@@ -318,17 +305,15 @@ const SignUp = () => {
                       setTermsError('');
                     }
                   }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   activeOpacity={0.7}>
                   <View
                     style={[
-                      styles.toggle,
-                      agreeToTerms && styles.toggleActive,
+                      styles.checkbox,
+                      agreeToTerms && styles.checkboxActive,
+                      !!termsError && styles.checkboxError,
                     ]}>
-                    {agreeToTerms ? (
-                      <View style={styles.toggleCircle} />
-                    ) : (
-                      <View style={styles.toggleCircleOff} />
-                    )}
+                    {agreeToTerms && <View style={styles.checkmark} />}
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -359,12 +344,11 @@ const SignUp = () => {
               ) : null}
 
               <Button
-                title={loading ? "SENDING..." : "SEND OTP"}
+                title="Send OTP"
                 onPress={handleSignUp}
                 style={styles.button}
-                linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                 title_style={styles.buttonText}
-                disabled={loading}
+                loader={loading}
               />
             </View>
           </ScrollView>
@@ -408,7 +392,7 @@ export default SignUp;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
+    backgroundColor: Colors.white,
   },
   backgroundGradient: {
     position: 'absolute',
@@ -424,56 +408,26 @@ const styles = StyleSheet.create({
     flexGrow: 1,
 
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingTop: 10,
-    paddingBottom: 20,
-    zIndex: 10,
-  },
-  backArrow: {
-    width: 24,
-    height: 24,
-    tintColor: Colors.black,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 72,
-    height: 30,
-  },
-  placeholder: {
-    width: 24,
-  },
   content: {
     flex: 1,
     paddingHorizontal: 22,
     paddingTop: 20,
   },
   title: {
-    marginBottom: 15,
+    marginBottom: 6,
   },
   subtitle: {
-    marginBottom: 30,
-    letterSpacing: 0.02,
+    marginBottom: 24,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 4,
   },
   button: {
     width: width - 44,
-    height: 60,
-    marginVertical: 20,
-    borderRadius: 12,
+    marginVertical: 12,
   },
   buttonText: {
-    fontSize: 18,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   signinLink: {
     alignItems: 'center',
@@ -484,90 +438,88 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   profilePictureContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
     alignItems: 'center',
   },
-  profilePictureTitle: {
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-  },
   profilePictureBox: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#F8F8F8',
-    borderWidth: 1,
-    borderColor: '#DDDDDD',
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: Colors.brandSoft,
+    borderWidth: 2,
+    borderColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    shadowColor: '#0F2A1F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 60,
   },
-  profilePlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileIcon: {
-    width: 40,
-    height: 40,
-    tintColor: Colors.gray,
-    marginBottom: 5,
+  cameraBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: -2,
+    width: 36,
+    height: 36,
   },
   profilePlaceholderText: {
     textAlign: 'center',
+    marginTop: 10,
   },
   termsContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: 4,
   },
   toggleContainer: {
-    marginRight: 10,
-    marginTop: 2,
+    marginRight: 12,
   },
-  toggle: {
-    width: 50,
-    height: 29.31,
-    backgroundColor: '#DDDDDD',
-    borderRadius: 17.5,
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: Colors.greyBorder,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 3.41,
   },
-  toggleActive: {
+  checkboxActive: {
     backgroundColor: Colors.zyaraGreen,
+    borderColor: Colors.zyaraGreen,
   },
-  toggleCircle: {
-    width: 22.73,
-    height: 22.73,
-    borderRadius: 11.365,
-    backgroundColor: '#FFFFFF',
-    alignSelf: 'flex-end',
+  checkboxError: {
+    borderColor: Colors.danger,
   },
-  toggleCircleOff: {
-    width: 22.73,
-    height: 22.73,
-    borderRadius: 11.365,
-    backgroundColor: '#FFFFFF',
-    alignSelf: 'flex-start',
+  // Tick drawn with two borders of a rotated box
+  checkmark: {
+    width: 6,
+    height: 11,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: Colors.white,
+    transform: [{ rotate: '45deg' }],
+    marginTop: -2,
   },
   termsTextContainer: {
     flex: 1,
   },
   termsText: {
-    fontSize: 16,
+    fontSize: 14,
+    lineHeight: 20,
     fontFamily: Font.GeneralSans_Regular,
-    color: Colors.black,
-    letterSpacing: 0.02,
-    flexWrap: 'wrap',
+    color: Colors.textSecondary,
   },
   termsTextRegular: {
     fontFamily: Font.GeneralSans_Regular,
-    color: Colors.black,
+    color: Colors.textSecondary,
   },
   termsLink: {
     fontFamily: Font.GeneralSans_Medium,
@@ -575,9 +527,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   errorText: {
-    marginTop: -10,
-    marginBottom: 10,
-    marginLeft: 22,
+    marginBottom: 4,
+    marginLeft: 34,
   },
 });
 

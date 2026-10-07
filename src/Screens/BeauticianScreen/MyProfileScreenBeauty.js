@@ -140,6 +140,7 @@ const MyProfileScreenBeauty = ({navigation}) => {
         {/* MENU LIST */}
         <View style={styles.menuContainer}>
           <MenuItem title="My Profile" icon={ImageConstant.user} subtitle="View or change profile details"  onPress={()=>navigation.navigate('BeauticianSettingProfile')}/>
+          <MenuItem title="My Gallery" icon={ImageConstant.upload} subtitle="Add photos of your work for customers"  onPress={()=>navigation.navigate('BeauticianGallery')}/>
           <MenuItem title="Manage Address" icon={ImageConstant.location2} subtitle="Share, Edit & Add Address" onPress={()=>navigation.navigate('BeauticianManageAdresss')}/>
           <MenuItem title="Help & Support" icon={ImageConstant.help} subtitle="FAQs and links"  onPress={() => navigation.navigate('CMSScreen', { slug: 'help-support-beautician' })}/>
           <MenuItem title="Settings" icon={ImageConstant.setting} subtitle="Manage your account setting" onPress={() => navigation.navigate('BeauticianSettingsScreen')} />

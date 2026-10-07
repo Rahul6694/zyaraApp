@@ -1,103 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
-    StyleSheet,
-    View,
-    Image,
-    TouchableOpacity,
-    FlatList,
+    ActivityIndicator,
     Dimensions,
-    ScrollView,
+    FlatList,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { Colors } from '../../Constants/Colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import ScreenHeader from '../../Component/ScreenHeader';
-import Input from '../../Component/Input';
-import { ImageConstant } from '../../Constants/ImageConstant';
-import { GET } from '../../Backend/Backend';
-import Typography from '../../Component/UI/Typography';
+import SimpleToast from 'react-native-simple-toast';
 import { SUBCATEGORIES } from '../../Backend/api_routes';
-import { Font } from '../../Constants/Font';
+import { GET } from '../../Backend/Backend';
+import { addToCart, getCart } from '../../Backend/BookingAPI';
 import Button from '../../Component/Button';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import Input from '../../Component/Input';
+import ScreenHeader from '../../Component/ScreenHeader';
+import Typography from '../../Component/UI/Typography';
+import { Colors } from '../../Constants/Colors';
+import { Font } from '../../Constants/Font';
+import { ImageConstant } from '../../Constants/ImageConstant';
+import { formatPrice, getFirstImageUrl } from '../../Utils/imageUrl';
 
 const { width } = Dimensions.get('window');
-
-// Static Data for Services
-const staticServices = [
-    {
-        id: 1,
-        name: 'Haircut & Styling',
-        title: 'Haircut & Styling',
-        image: 'https://images.unsplash.com/photo-1560869713-7d0a8c41b0b5?w=400',
-        rating: 4.5,
-        duration: '1 hr 50 mins',
-        price: '999',
-        original_price: '1500',
-        discount: '20',
-        inCart: false,
-    },
-    {
-        id: 2,
-        name: 'Hair Treatments',
-        title: 'Hair Treatments',
-        image: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=400',
-        rating: 4.5,
-        duration: '1 hr 50 mins',
-        price: '999',
-        original_price: '1500',
-        discount: '20',
-        inCart: false,
-    },
-    {
-        id: 3,
-        name: 'Hair Coloring',
-        title: 'Hair Coloring',
-        image: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a13737?w=400',
-        rating: 4.5,
-        duration: '1 hr 50 mins',
-        price: '749',
-        original_price: '1099',
-        discount: '31',
-        inCart: false,
-    },
-    {
-        id: 4,
-        name: 'Hair Spa',
-        title: 'Hair Spa',
-        image: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a13737?w=400',
-        rating: 4.5,
-        duration: '1 hr 50 mins',
-        price: '999',
-        original_price: '1500',
-        discount: '20',
-        inCart: false,
-    },
-    {
-        id: 5,
-        name: 'Advanced Facial',
-        title: 'Advanced Facial (Glow, Detan, Anti-aging)',
-        image: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400',
-        rating: 4.5,
-        duration: '1 hr 50 mins',
-        price: '999',
-        original_price: '1600',
-        discount: '20',
-        inCart: false,
-    },
-    {
-        id: 6,
-        name: 'Deep Cleansing Facial',
-        title: 'Deep Cleansing Facial',
-        image: 'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=400',
-        rating: 4.5,
-        duration: '1 hr 15 mins',
-        price: '799',
-        original_price: '1200',
-        discount: '33',
-        inCart: false,
-    },
-];
 
 const SubCategories = () => {
     const navigation = useNavigation();
@@ -105,57 +32,65 @@ const SubCategories = () => {
     const categoryId = route?.params?.categoryId || route?.params?.id;
     const categoryName = route?.params?.categoryName || route?.params?.name || 'Sub Categories';
 
-    const [serviceList, setServiceList] = useState(staticServices);
-    const [loading, setLoading] = useState(false);
+    const [serviceList, setServiceList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [cartItems, setCartItems] = useState(0);
+    // sub_category_id -> quantity currently in the cart
+    const [cartMap, setCartMap] = useState({});
+    const [addingId, setAddingId] = useState(null);
 
-    useEffect(() => {
-        // Initialize cart items from services that are already in cart
-        const initialCartCount = staticServices.filter(s => s.inCart).length;
-        setCartItems(initialCartCount);
+    const applyCart = cart => {
+        const map = {};
+        (cart?.items || []).forEach(i => {
+            if (i.sub_category_id) {
+                map[i.sub_category_id] = i.quantity;
+            }
+        });
+        setCartMap(map);
+        setCartItems(cart?.total_items || 0);
+    };
 
-        // Uncomment below to fetch from API
-        // if (categoryId) {
-        //     getSubCategories();
-        // }
-    }, [categoryId]);
-
-    const getSubCategories = () => {
-        setLoading(true);
+    const getSubCategories = useCallback(() => {
         GET(
-            `${SUBCATEGORIES}?category_id=${categoryId}`,
+            categoryId ? `${SUBCATEGORIES}/category/${categoryId}?limit=100` : `${SUBCATEGORIES}?limit=100`,
             res => {
-                console.log('Sub Categories:', res);
-                setServiceList(res?.data || staticServices);
+                setServiceList(res?.data || []);
                 setLoading(false);
             },
             err => {
                 console.log('Get Error:', err);
-                setServiceList(staticServices); // Fallback to static data
                 setLoading(false);
             }
         );
-    };
+    }, [categoryId]);
+
+    // Reload services and cart state whenever the screen is shown
+    useFocusEffect(
+        useCallback(() => {
+            getSubCategories();
+            getCart(null, res => applyCart(res?.data), () => {});
+        }, [getSubCategories])
+    );
 
     const filteredServices = serviceList.filter(service =>
         service?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service?.title?.toLowerCase().includes(searchQuery.toLowerCase())
+        service?.description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleAddToCart = (item) => {
-        // Add to cart logic
-        if (!item.inCart) {
-            setServiceList(prev =>
-                prev.map(service =>
-                    service.id === item.id
-                        ? { ...service, inCart: true }
-                        : service
-                )
-            );
-            setCartItems(prev => prev + 1);
-            console.log('Added to cart:', item);
-        }
+        setAddingId(item.id);
+        addToCart(
+            { sub_category_id: item.id, quantity: 1 },
+            res => {
+                setAddingId(null);
+                applyCart(res?.data);
+            },
+            err => {
+                setAddingId(null);
+                SimpleToast.show(err?.data?.message || 'Could not add to cart', SimpleToast.SHORT);
+            }
+        );
     };
 
     const handleViewDetails = (item) => {
@@ -163,16 +98,17 @@ const SubCategories = () => {
         navigation.navigate('ServiceDetails', { service: item });
     };
 
-    const renderServiceItem = ({ item }) => (
+    const renderServiceItem = ({ item }) => {
+        const image = getFirstImageUrl(item.images);
+        const inCart = !!cartMap[item.id];
+        const hasDiscount = Number(item.discount) > 0 && Number(item.discounted_price) > 0;
+        return (
         <View style={styles.serviceCard}>
             <View style={styles.serviceImageContainer}>
                 <Image
-                    source={ImageConstant.girl}
+                    source={image ? { uri: image } : ImageConstant.girl}
                     style={styles.serviceImage}
                     resizeMode="cover"
-                    onError={(error) => {
-                        console.log('Service image error:', error);
-                    }}
                 />
             </View>
 
@@ -182,7 +118,7 @@ const SubCategories = () => {
                     size={16}
                     color="#000000"
                     style={styles.serviceTitle}>
-                    {item?.name || item?.title || 'Service Name'}
+                    {item?.name}
                 </Typography>
 
                 {/* Rating */}
@@ -192,7 +128,7 @@ const SubCategories = () => {
                             type={Font.GeneralSans_Regular}
                             size={15}
                             color="#000000">
-                            {item?.rating || 4.5}
+                            {Number(item?.rating || 0).toFixed(1)}
                         </Typography>
                         <View style={styles.starIcon}>
                             <Typography size={12}>⭐</Typography>
@@ -203,8 +139,9 @@ const SubCategories = () => {
                             type={Font.GeneralSans_Regular}
                             size={15}
                             color="#8C8C8C"
+                            numberOfLines={1}
                             style={styles.duration}>
-                            {item?.duration || item?.service_duration || '1 hr 50 mins'}
+                            {item?.category_name || categoryName}
                         </Typography>
                     </View>
                 </View>
@@ -215,26 +152,24 @@ const SubCategories = () => {
                         type={Font.GeneralSans_Bold}
                         size={18}
                         color="#000000">
-                        ₹{item?.price || item?.service_price || '999'}
+                        {formatPrice(hasDiscount ? item.discounted_price : item.price)}
                     </Typography>
-                    {item?.original_price && (
+                    {hasDiscount && (
                         <>
                             <Typography
                                 type={Font.GeneralSans_Regular}
                                 size={16}
                                 color="#8C8C8C"
                                 style={styles.originalPrice}>
-                                ₹{item.original_price}
+                                {formatPrice(item.price)}
                             </Typography>
-                            {item?.discount && (
-                                <Typography
-                                    type={Font.GeneralSans_Medium}
-                                    size={16}
-                                    color="#FFBA6A"
-                                    style={styles.discount}>
-                                    {item.discount}% off
-                                </Typography>
-                            )}
+                            <Typography
+                                type={Font.GeneralSans_Medium}
+                                size={16}
+                                color="#FFBA6A"
+                                style={styles.discount}>
+                                {Math.round(Number(item.discount))}% off
+                            </Typography>
                         </>
                     )}
                 </View>
@@ -244,15 +179,20 @@ const SubCategories = () => {
                     <TouchableOpacity
                         style={[
                             styles.addButton,
-                            item.inCart && styles.addButtonActive
+                            inCart && styles.addButtonActive
                         ]}
-                        onPress={() => handleAddToCart(item)}>
-                        <Typography
-                            type={Font.GeneralSans_Medium}
-                            size={18}
-                            color={item.inCart ? '#FFFFFF' : Colors.zyaraGreen}>
-                            {item.inCart ? 'ADDED' : 'ADD'}
-                        </Typography>
+                        disabled={addingId === item.id}
+                        onPress={() => (inCart ? navigation.navigate('AddToCart') : handleAddToCart(item))}>
+                        {addingId === item.id ? (
+                            <ActivityIndicator size="small" color={Colors.zyaraGreen} />
+                        ) : (
+                            <Typography
+                                type={Font.GeneralSans_Medium}
+                                size={16}
+                                color={inCart ? '#FFFFFF' : Colors.zyaraGreen}>
+                                {inCart ? `ADDED${cartMap[item.id] > 1 ? ` (${cartMap[item.id]})` : ''}` : 'ADD'}
+                            </Typography>
+                        )}
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -275,7 +215,8 @@ const SubCategories = () => {
                 </View>
             </View>
         </View>
-    );
+        );
+    };
 
     return (
         <>
@@ -314,7 +255,7 @@ const SubCategories = () => {
                                     size={16}
                                     color="#999999"
                                     textAlign="center">
-                                    {loading ? 'Loading...' : 'No services found'}
+                                    {loading ? 'Loading...' : 'No services in this category yet'}
                                 </Typography>
                             </View>
                         }
@@ -348,7 +289,8 @@ const SubCategories = () => {
            
                         <Button
                             title="CONTINUE"
-                            onPress={() => navigation.navigate('ChooseBeauticians', { cartItems })}
+                            disabled={cartItems === 0}
+                            onPress={() => navigation.navigate('AddToCart')}
                             style={styles.continueButton}
                             linerColor={[Colors.zyaraGreen, Colors.zyaraGreen]}
                             title_style={styles.buttonText}
@@ -404,8 +346,8 @@ const styles = StyleSheet.create({
     },
 
     serviceImageContainer: {
-        width: 135,
-        height: 120,
+        width: 110,
+        height: 110,
         borderRadius: 15,
         overflow: 'hidden',
     },
@@ -479,8 +421,8 @@ const styles = StyleSheet.create({
     },
 
     addButton: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 9,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: Colors.zyaraGreen,
@@ -511,7 +453,7 @@ const styles = StyleSheet.create({
 
     cartButton: {
         position: 'absolute',
-        bottom: 110,
+        bottom: 120,
         left: '30%',
         backgroundColor: Colors.zyaraGreen,
         paddingHorizontal: 20,
